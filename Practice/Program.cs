@@ -35,21 +35,15 @@ namespace Practice
         {
             var bankService = new BankService();
 
+            // Пример расчета зарплаты владельцев банка
+            int ownersCount = 3;
+            int bankProfit = 1000000;
+            int bankExpenses = 500000;
+            int salary = bankService.CalculateOwnerSalary(bankProfit, bankExpenses, ownersCount);
+
             // Пример преобразования клиента в сотрудника
             var client = new Client("Алексей Алексеев", "111222", new DateTime(2000, 3, 3));
             var newEmployee = bankService.ConvertClientToEmployee(client);
-            
-            // Пример расчета зарплаты владельцев банка
-            var bankOwners = new List<Employee>
-            {
-                new Employee("Иван Иванов", "123456", new DateTime(1980, 1, 1)),
-                new Employee("Петр Петров", "654321", new DateTime(1985, 2, 2))
-            };
-            bankOwners.Add(newEmployee);
-
-            int bankProfit = 1000000;
-            int bankExpenses = 500000;
-            int salary = bankService.CalculateOwnerSalary(bankProfit, bankExpenses, bankOwners);
         }
 
         /// <summary>

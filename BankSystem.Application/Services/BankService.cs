@@ -11,14 +11,9 @@ namespace BankSystem.Application.Services
         /// <param name="bankExpenses">Расходы банка.</param>
         /// <param name="owners">Количество владельцев банка (сотрудников).</param>
         /// <returns>Зарплата владельца банка.</returns>
-        public int CalculateOwnerSalary(int bankProfit, int bankExpenses, List<Employee> owners)
+        public int CalculateOwnerSalary(int bankProfit, int bankExpenses, int ownersCount)
         {
-            int salaryPerOwner = (bankProfit - bankExpenses) / owners.Count;
-            
-            foreach (var owner in owners)
-            {
-                owner.Salary = salaryPerOwner;
-            }
+            int salaryPerOwner = (bankProfit - bankExpenses) / ownersCount;
             
             return salaryPerOwner;
         }
