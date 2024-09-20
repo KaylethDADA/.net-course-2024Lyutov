@@ -5,15 +5,9 @@
     /// </summary>
     public class Client : Person
     {
-        public Client(string fullName, string phoneNumber, DateTime birthDay, DateTime registrationDate)
+        public Client(string fullName, string phoneNumber, DateTime birthDay)
             : base(fullName, phoneNumber, birthDay)
         {
-            RegistrationDate = registrationDate;
         }
-
-        /// <summary>
-        /// Дата регистрации клиента.
-        /// </summary>
-        public DateTime RegistrationDate { get; set; }
     }
 }

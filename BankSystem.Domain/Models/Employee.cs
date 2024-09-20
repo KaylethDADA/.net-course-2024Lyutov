@@ -12,6 +12,11 @@
         }
 
         /// <summary>
+        /// Зарплата сотрудника.
+        /// </summary>
+        public int Salary { get; set; }
+
+        /// <summary>
         /// Контракт сотрудника.
         /// </summary>
         public string Contract { get; set; }
