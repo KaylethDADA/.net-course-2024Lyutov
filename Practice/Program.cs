@@ -22,13 +22,13 @@ namespace Practice
             stopwatch.Start();
             var clientFromList = clients.FirstOrDefault(c => c.PhoneNumber == phoneNumberToSearch);
             stopwatch.Stop();
-            Console.WriteLine($"Поиск в списке занял: {stopwatch.ElapsedMilliseconds} ms");
+            Console.WriteLine($"Поиск в списке занял: {stopwatch.Elapsed.TotalMilliseconds} ms");
 
             // Замер времени поиска клиента по номеру телефона в словаре
             stopwatch.Restart();
             var clientFromDictionary = clientDictionary[phoneNumberToSearch];
             stopwatch.Stop();
-            Console.WriteLine($"Поиск в словаре занял: {stopwatch.ElapsedMilliseconds} ms");
+            Console.WriteLine($"Поиск в словаре занял: {stopwatch.Elapsed.TotalMilliseconds} ms");
 
             Console.WriteLine();
 
@@ -37,7 +37,7 @@ namespace Practice
             stopwatch.Restart();
             var youngClients = clients.Where(c => c.Age < ageLimit).ToList();
             stopwatch.Stop();
-            Console.WriteLine($"Найдено клиентов моложе {ageLimit} лет: {youngClients.Count}, за {stopwatch.ElapsedMilliseconds} ms");
+            Console.WriteLine($"Найдено клиентов моложе {ageLimit} лет: {youngClients.Count}, за {stopwatch.Elapsed.TotalMilliseconds} ms");
 
             Console.WriteLine();
 
@@ -45,7 +45,7 @@ namespace Practice
             stopwatch.Restart();
             var employeeWithMinSalary = employees.OrderBy(e => e.Salary).FirstOrDefault();
             stopwatch.Stop();
-            Console.WriteLine($"Сотрудник с минимальной зарплатой: {employeeWithMinSalary?.FullName}, Зарплата: {employeeWithMinSalary?.Salary}, за {stopwatch.ElapsedMilliseconds} ms");
+            Console.WriteLine($"Сотрудник с минимальной зарплатой: {employeeWithMinSalary?.FullName}, Зарплата: {employeeWithMinSalary?.Salary}, за {stopwatch.Elapsed.TotalMilliseconds} ms");
 
             Console.WriteLine();
 
@@ -54,13 +54,13 @@ namespace Practice
             stopwatch.Restart();
             var lastClientUsingFirstOrDefault = clientDictionary.Values.FirstOrDefault(c => c.PhoneNumber == phoneNumberToSearch);
             stopwatch.Stop();
-            Console.WriteLine($"Поиск с FirstOrDefault занял: {stopwatch.ElapsedMilliseconds} ms");
+            Console.WriteLine($"Поиск с FirstOrDefault занял: {stopwatch.Elapsed.TotalMilliseconds} ms");
 
             // 2. Поиск последнего элемента по ключу
             stopwatch.Restart();
             var lastClientByKey = clientDictionary[phoneNumberToSearch];
             stopwatch.Stop();
-            Console.WriteLine($"Поиск по ключу занял: {stopwatch.ElapsedMilliseconds} ms");
+            Console.WriteLine($"Поиск по ключу занял: {stopwatch.Elapsed.TotalMilliseconds} ms");
         }
 
         public static void Practices()
