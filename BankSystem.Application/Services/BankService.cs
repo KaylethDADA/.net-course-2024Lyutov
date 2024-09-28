@@ -13,12 +13,14 @@ namespace BankSystem.Application.Services
 
         public Employee ConvertClientToEmployee(Client client)
         {
-            var newEmployee = new Employee(client.FullName, client.PhoneNumber, client.BirthDay)
+            return new Employee
             {
-                Contract = $"Новый контракт для нового сотрудника: {client.FullName}\n Tелефон: {client.PhoneNumber}\n Возраст: {client.Age} лет."
+                FullName = client.FullName,
+                Contract = $"Новый контракт для нового сотрудника: {client.FullName}\n Tелефон: {client.PhoneNumber}\n Возраст: {client.Age} лет.",
+                BirthDay = client.BirthDay,
+                PhoneNumber = client.PhoneNumber,
+                Salary = 10000
             };
-
-            return newEmployee;
         }
     }
 }

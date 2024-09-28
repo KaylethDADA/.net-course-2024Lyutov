@@ -69,7 +69,7 @@ namespace Practice
             var employee = new Employee("Иван Иванов", "89991234567", new DateTime(1990, 5, 23));
             UpdateContract(employee);
 
-            var currency = new Currency("USD", 100.50m);
+            var currency = new Currency("USD","");
             UpdateCurrency(ref currency);
 
 
@@ -92,7 +92,7 @@ namespace Practice
 
         public static void UpdateCurrency(ref Currency currency)
         {
-            currency = new Currency(currency.Code, currency.Amount + 50);
+            currency = new Currency(currency.Code, "");
         }
     }
 }

@@ -30,12 +30,27 @@ namespace BankSystem.Application.Services
 
         public Dictionary<string, Client> GenerateClientDictionary(List<Client> clients)
         {
-            var clientDictionary = new Dictionary<string, Client>();
-            foreach (var client in clients)
-            {
-                clientDictionary[client.PhoneNumber] = client;
-            }
-            return clientDictionary;
+            return clients.ToDictionary(c => c.PhoneNumber, c => c);
+        }
+
+        public Dictionary<Client, List<Account>> GenerateClientAccounts(List<Client> clients)
+        {
+            var random = new Random();
+            var accountFaker = new Faker<Account>()
+               .RuleFor(a => a.Currency, f => 
+                    new Currency(
+                        f.Finance.Currency().Code,
+                        f.Finance.Currency().Description,
+                        f.Finance.Currency().Symbol
+                    ))
+               .RuleFor(a => a.Amount, f => f.Finance.Amount(10, 10000));
+
+            return clients.ToDictionary(
+                c => c,
+                c => Enumerable.Range(0, random.Next(1, 4))
+                    .Select(_ => accountFaker.Generate())
+                    .ToList()
+            );
         }
     }
 }
