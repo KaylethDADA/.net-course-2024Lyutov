@@ -9,11 +9,6 @@
             Salary = salary;
         }
 
-        public Employee()
-        {
-        
-        }
-
         public int Salary { get; set; }
 
         public string Contract { get; set; }

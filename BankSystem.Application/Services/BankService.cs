@@ -11,16 +11,9 @@ namespace BankSystem.Application.Services
             return salaryPerOwner;
         }
 
-        public Employee ConvertClientToEmployee(Client client)
+        public Employee ConvertClientToEmployee(Client client, string contract, int salary)
         {
-            return new Employee
-            {
-                FullName = client.FullName,
-                Contract = $"Новый контракт для нового сотрудника: {client.FullName}\n Tелефон: {client.PhoneNumber}\n Возраст: {client.Age} лет.",
-                BirthDay = client.BirthDay,
-                PhoneNumber = client.PhoneNumber,
-                Salary = 10000
-            };
+            return new Employee(client.FullName, client.PhoneNumber, client.BirthDay, contract, salary);
         }
     }
 }

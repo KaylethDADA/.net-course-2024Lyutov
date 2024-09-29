@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Practice", "Practice\Practi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BankSystem.Application", "BankSystem.Application\BankSystem.Application.csproj", "{7ED5D266-23E5-49B5-A13F-FB98DAEC690D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BancSystem.App.Tests", "BancSystem.App.Tests\BancSystem.App.Tests.csproj", "{178CB4D7-77F0-4988-A1EF-D1B5E5FE2A73}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BancSystem.App.Tests", "BancSystem.App.Tests\BancSystem.App.Tests.csproj", "{178CB4D7-77F0-4988-A1EF-D1B5E5FE2A73}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
