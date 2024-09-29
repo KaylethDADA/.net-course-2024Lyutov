@@ -66,10 +66,10 @@ namespace Practice
         public static void Practices()
         {
             //Задание к теме "Типы значений и ссылочные типы".
-            var employee = new Employee("Иван Иванов", "89991234567", new DateTime(1990, 5, 23));
+            var employee = new Employee("Иван Иванов", "89991234567", new DateTime(1990, 5, 23), "", 1);
             UpdateContract(employee);
 
-            var currency = new Currency("USD", 100.50m);
+            var currency = new Currency("USD","","");
             UpdateCurrency(ref currency);
 
 
@@ -82,7 +82,7 @@ namespace Practice
             int salary = bankService.CalculateOwnerSalary(bankProfit, bankExpenses, ownersCount);
 
             var client = new Client("Алексей Алексеев", "111222", new DateTime(2000, 3, 3));
-            var newEmployee = bankService.ConvertClientToEmployee(client);
+            var newEmployee = bankService.ConvertClientToEmployee(client, "", 1);
         }
 
         public static void UpdateContract(Employee employee)
@@ -92,7 +92,7 @@ namespace Practice
 
         public static void UpdateCurrency(ref Currency currency)
         {
-            currency = new Currency(currency.Code, currency.Amount + 50);
+            currency = new Currency(currency.Code, "", "");
         }
     }
 }

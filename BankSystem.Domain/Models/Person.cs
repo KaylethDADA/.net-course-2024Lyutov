@@ -9,11 +9,6 @@
             BirthDay = birthDay;
         }
 
-        public Person()
-        {
-        
-        }
-
         public string FullName { get; set; }
 
         public DateTime BirthDay { get; set; }
