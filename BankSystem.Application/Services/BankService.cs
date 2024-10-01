@@ -13,7 +13,13 @@ namespace BankSystem.Application.Services
 
         public Employee ConvertClientToEmployee(Client client, string contract, int salary)
         {
-            return new Employee(client.FullName, client.PhoneNumber, client.BirthDay, contract, salary);
+            return new Employee
+            { 
+                FullName = client.FullName,
+                PhoneNumber = client.PhoneNumber,
+                BirthDay = client.BirthDay,
+                Contract = contract,
+                Salary = salary };
         }
     }
 }
