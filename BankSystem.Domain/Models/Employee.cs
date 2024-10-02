@@ -2,13 +2,6 @@
 {
     public class Employee : Person
     {
-        public Employee(string fullName, string phoneNumber, DateTime birthDay, string contract, int salary)
-            : base(fullName, phoneNumber, birthDay)
-        {
-            Contract = contract;
-            Salary = salary;
-        }
-
         public int Salary { get; set; }
 
         public string Contract { get; set; }

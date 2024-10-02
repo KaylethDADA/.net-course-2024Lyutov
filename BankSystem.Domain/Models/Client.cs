@@ -2,11 +2,6 @@
 {
     public class Client : Person
     {
-        public Client(string fullName, string phoneNumber, DateTime birthDay)
-            : base(fullName, phoneNumber, birthDay)
-        {
-        }
-
         public override bool Equals(object? obj)
         {
             if (obj == null)

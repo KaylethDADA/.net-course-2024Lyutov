@@ -15,32 +15,18 @@ namespace BancSystem.App.Tests
             var clientAccountDictionary = testDataGenerator.GenerateClientAccounts(clients);
 
             var existingClient = clientAccountDictionary.Keys.First();
-            var newClient = new Client(existingClient.FullName, existingClient.PhoneNumber, existingClient.BirthDay);
+            var newClient = new Client
+            {
+               FullName = existingClient.FullName,
+               BirthDay = existingClient.BirthDay,
+               PhoneNumber = existingClient.PhoneNumber,
+            };
 
             // Act
             bool account = clientAccountDictionary.ContainsKey(newClient);
 
             // Assert
-            Assert.True(account, "C переопределенными методами Equals и GetHashCode");
-        }
-    
-        [Fact]
-        public void GetHashCodeNecessityNegativeTest()
-        {
-            // Arrange
-            var testDataGenerator = new TestDataGenerator();
-
-            var clients = testDataGenerator.GenerateClients(10);
-            var clientAccountDictionary = testDataGenerator.GenerateClientAccounts(clients);
-            
-            var existingClient = clientAccountDictionary.Keys.First();
-            var newClient = new Client(existingClient.FullName, existingClient.PhoneNumber, existingClient.BirthDay);
-
-            // Act
-            bool account = clientAccountDictionary.ContainsKey(newClient);
-
-            // Assert
-            Assert.False(account, "Без переопределения Equals и GetHashCode");
+            Assert.True(account);
         }
 
         [Fact]

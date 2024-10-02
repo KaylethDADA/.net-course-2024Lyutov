@@ -8,11 +8,9 @@ namespace BankSystem.Application.Services
         public List<Client> GenerateClients(int count)
         {
             var clientFaker = new Faker<Client>()
-                .CustomInstantiator(f => new Client(
-                    f.Name.FullName(),
-                    f.Phone.PhoneNumber(),
-                    f.Date.Past(50, DateTime.Now.AddYears(-18))
-                ));
+                .RuleFor(c => c.FullName, f => f.Name.FullName())
+                .RuleFor(c => c.PhoneNumber, f => f.Phone.PhoneNumber())
+                .RuleFor(c => c.BirthDay, f => f.Date.Past(50, DateTime.Now.AddYears(-18)));
 
             return clientFaker.Generate(count);
         }
@@ -20,13 +18,10 @@ namespace BankSystem.Application.Services
         public List<Employee> GenerateEmployees(int count)
         {
             var employeeFaker = new Faker<Employee>()
-                 .CustomInstantiator(f => new Employee(
-                     f.Name.FullName(),
-                     f.Phone.PhoneNumber(),
-                     f.Date.Past(50, DateTime.Now.AddYears(-18)),
-                     f.Commerce.Department(),
-                     f.Random.Int(30000, 100000)
-                 ));
+                .RuleFor(e => e.FullName, f => f.Name.FullName())
+                .RuleFor(e => e.PhoneNumber, f => f.Phone.PhoneNumber())
+                .RuleFor(e => e.BirthDay, f => f.Date.Past(50, DateTime.Now.AddYears(-18)))
+                .RuleFor(e => e.Salary, f => f.Random.Int(30000, 100000));
 
             return employeeFaker.Generate(count);
         }
@@ -40,13 +35,11 @@ namespace BankSystem.Application.Services
         {
             var random = new Random();
             var accountFaker = new Faker<Account>()
-                .CustomInstantiator(f => new Account(
-                    new Currency(
-                        f.Finance.Currency().Code,
-                        f.Finance.Currency().Description,
-                        f.Finance.Currency().Symbol),
-                    f.Finance.Amount(10, 10000)
-                ));
+                .RuleFor(a => a.Currency, f => new Currency(
+                    f.Finance.Currency().Code,
+                    f.Finance.Currency().Description,
+                    f.Finance.Currency().Symbol))
+                .RuleFor(a => a.Amount, f => f.Finance.Amount(10, 10000));
 
             return clients.ToDictionary(
                 c => c,
