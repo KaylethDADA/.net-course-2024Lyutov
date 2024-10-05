@@ -2,7 +2,7 @@
 {
     public class Account
     {
-        public Currency Currency { get; set; }
+        public Currency Currency { get; init; }
         public decimal Amount { get; set; }
     }
 }

@@ -11,12 +11,33 @@ namespace BankSystem.Data.Storages
             _employees = new List<Employee>();
         }
 
-        public IEnumerable<Employee> Employees => _employees;
-
-
         public void AddEmployee(Employee employee)
         {
             _employees.Add(employee);
+        }
+
+        public void UpdateEmployee(Employee oldEmployee, Employee newEmployee)
+        {
+            var existingEmployee = _employees.FirstOrDefault(e => e.Equals(oldEmployee));
+            
+            if (existingEmployee == null)
+                throw new Exception($"{nameof(Employee)} not found.");
+
+            existingEmployee.FullName = newEmployee.FullName;
+            existingEmployee.BirthDay = newEmployee.BirthDay;
+            existingEmployee.PhoneNumber = newEmployee.PhoneNumber;
+            existingEmployee.Salary = newEmployee.Salary;
+            existingEmployee.Contract = newEmployee.Contract;
+        }
+
+        public List<Employee> GetAllEmployees()
+        {
+            return _employees;
+        }
+
+        public Employee? GetEmployee(Employee employee)
+        {
+            return _employees.FirstOrDefault(x => x.Equals(employee));
         }
 
         public Employee? GetYoungestEmployee()

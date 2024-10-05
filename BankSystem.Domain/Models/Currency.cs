@@ -2,11 +2,11 @@
 {
     public struct Currency
     {
-        public Currency(string code, string name, string symdol)
+        public Currency(string code, string symbol, string name)
         {
             Code = code;
             Name = name;
-            Symbol = symdol;
+            Symbol = symbol;
         }
 
         public string Code { get; set; }
