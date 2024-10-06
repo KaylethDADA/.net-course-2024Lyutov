@@ -102,7 +102,7 @@ namespace BancSystem.App.Tests
             _clientStorage.AddClient(client2);
 
             // Act
-            var result = _clientService.FilterClients("John", null, null, null, null);
+            var result = _clientService.GetClientsByFilter("John", null, null, null, null);
 
             // Assert
             Assert.Single(result);

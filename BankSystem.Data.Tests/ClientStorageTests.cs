@@ -1,5 +1,6 @@
 using BankSystem.Application.Services;
 using BankSystem.Data.Storages;
+using BankSystem.Domain.Models;
 
 namespace BankSystem.Data.Tests
 {
@@ -205,6 +206,26 @@ namespace BankSystem.Data.Tests
             Assert.NotNull(clientAccounts);
             Assert.Equal(accounts.Count, clientAccounts.Count);
             Assert.True(accounts.SequenceEqual(clientAccounts));
+        }
+
+        [Fact]
+        public void FilterClientsPositiveTest()
+        {
+            var storage = new ClientStorage();
+
+            // Arrange
+            var client1 = new Client { FullName = "John Doe", PhoneNumber = "1234567890", BirthDay = new DateTime(1990, 1, 1), PassportNumber = "123" };
+            var client2 = new Client { FullName = "Jane Doe", PhoneNumber = "0987654321", BirthDay = new DateTime(1995, 1, 1), PassportNumber = "456" };
+
+            storage.AddClient(client1);
+            storage.AddClient(client2);
+
+            // Act
+            var result = storage.GetClientsByFilter("John", null, null, null, null);
+
+            // Assert
+            Assert.Single(result);
+            Assert.Contains(client1, result);
         }
     }
 }

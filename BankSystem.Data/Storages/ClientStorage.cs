@@ -81,5 +81,32 @@ namespace BankSystem.Data.Storages
         {
             return _clientAccounts;
         }
+
+        public Dictionary<Client, List<Account>> GetClientsByFilter(
+            string? fullName,
+            string? phoneNumber,
+            string? passportNumber,
+            DateTime? birthDateTo,
+            DateTime? birthDateFrom)
+        {
+            var clientAccounts = _clientAccounts.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(fullName))
+                clientAccounts = clientAccounts.Where(c => c.Key.FullName.Contains(fullName));
+
+            if (!string.IsNullOrWhiteSpace(phoneNumber))
+                clientAccounts = clientAccounts.Where(c => c.Key.PhoneNumber.Contains(phoneNumber));
+
+            if (!string.IsNullOrWhiteSpace(passportNumber))
+                clientAccounts = clientAccounts.Where(c => c.Key.PassportNumber.Contains(passportNumber));
+
+            if (birthDateFrom.HasValue)
+                clientAccounts = clientAccounts.Where(c => c.Key.BirthDay >= birthDateFrom.Value);
+
+            if (birthDateTo.HasValue)
+                clientAccounts = clientAccounts.Where(c => c.Key.BirthDay <= birthDateTo.Value);
+
+            return clientAccounts.ToDictionary(c => c.Key, c => c.Value);
+        }
     }
 }

@@ -165,5 +165,26 @@ namespace BankSystem.Data.Tests
             // Assert
             Assert.Equal(expectedAverageAge, averageAge);
         }
+
+        [Fact]
+        public void GetEmployeeByFilterPositiveTest()
+        {
+            // Arrange
+            var storage = new EmployeeStorage();
+            var testDataGenerator = new TestDataGenerator();
+
+            var employee1 = testDataGenerator.GenerateEmployees(1).First();
+            var employee2 = testDataGenerator.GenerateEmployees(1).First();
+
+            storage.AddEmployee(employee1);
+            storage.AddEmployee(employee2);
+
+            // Act
+            var result = storage.GetEmployeeByFilter(employee1.FullName, null, null, null, null);
+
+            // Assert
+            Assert.Single(result);
+            Assert.Contains(employee1, result);
+        }
     }
 }

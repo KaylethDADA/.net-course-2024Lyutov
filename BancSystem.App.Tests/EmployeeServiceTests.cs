@@ -51,7 +51,7 @@ namespace BancSystem.App.Tests
 
 
         [Fact]
-        public void FilterEmployeesPositiveTest()
+        public void GetEmployeeByFilterPositiveTest()
         {
             // Arrange
             var employee1 = _testDataGenerator.GenerateEmployees(1).First();
@@ -61,7 +61,7 @@ namespace BancSystem.App.Tests
             _employeeStorage.AddEmployee(employee2);
 
             // Act
-            var result = _employeeService.FilterEmployees(employee1.FullName, null, null, null, null).ToList();
+            var result = _employeeService.GetEmployeeByFilter(employee1.FullName, null, null, null, null);
 
             // Assert
             Assert.Single(result);

@@ -94,23 +94,14 @@ namespace BankSystem.Application.Services
             }
         }
 
-        public IEnumerable<Client> FilterClients(string? fullName, string? phoneNumber, string? passportNumber, DateTime? birthDateTo, DateTime? birthDateFrom)
+        public Dictionary<Client, List<Account>> GetClientsByFilter(
+            string? fullName,
+            string? phoneNumber,
+            string? passportNumber,
+            DateTime? birthDateTo,
+            DateTime? birthDateFrom)
         {
-            var clients = _clientStorage.GetAll().Keys.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(fullName))
-                clients = clients.Where(c => c.FullName.Contains(fullName));
-
-            if (!string.IsNullOrWhiteSpace(phoneNumber))
-                clients = clients.Where(c => c.PhoneNumber.Contains(phoneNumber));
-
-            if (birthDateFrom.HasValue)
-                clients = clients.Where(c => c.BirthDay >= birthDateFrom.Value);
-
-            if (birthDateTo.HasValue)
-                clients = clients.Where(c => c.BirthDay <= birthDateTo.Value);
-
-            return clients.ToList();
+            return _clientStorage.GetClientsByFilter(fullName, phoneNumber, passportNumber, birthDateTo, birthDateFrom);
         }
 
         private Account GetDefaultAccount()

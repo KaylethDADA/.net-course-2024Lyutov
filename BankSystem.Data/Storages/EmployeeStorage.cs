@@ -56,5 +56,29 @@ namespace BankSystem.Data.Storages
         {
             return _employees.Average(c => c.Age);
         }
+
+        public List<Employee> GetEmployeeByFilter(
+            string? fullName,
+            string? phoneNumber,
+            string? passportNumber,
+            DateTime? birthDateTo,
+            DateTime? birthDateFrom)
+        {
+            var clients = _employees.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(fullName))
+                clients = clients.Where(c => c.FullName.Contains(fullName));
+
+            if (!string.IsNullOrWhiteSpace(phoneNumber))
+                clients = clients.Where(c => c.PhoneNumber.Contains(phoneNumber));
+
+            if (birthDateFrom.HasValue)
+                clients = clients.Where(c => c.BirthDay >= birthDateFrom.Value);
+
+            if (birthDateTo.HasValue)
+                clients = clients.Where(c => c.BirthDay <= birthDateTo.Value);
+
+            return clients.ToList();
+        }
     }
 }
