@@ -8,6 +8,8 @@
 
         public string PhoneNumber { get; set; }
 
-        public int Age => DateTime.Now.Year - BirthDay.Year;
+        public string PassportNumber { get; set; }
+
+        public int Age => DateTime.Now.Year - BirthDay.Year - (DateTime.Now.DayOfYear < BirthDay.DayOfYear ? 1 : 0);
     }
 }

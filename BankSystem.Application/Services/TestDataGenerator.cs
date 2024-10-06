@@ -10,6 +10,7 @@ namespace BankSystem.Application.Services
             var clientFaker = new Faker<Client>()
                 .RuleFor(c => c.FullName, f => f.Name.FullName())
                 .RuleFor(c => c.PhoneNumber, f => f.Phone.PhoneNumber())
+                .RuleFor(c => c.PassportNumber, f => f.Random.String2(10, "0123456789"))
                 .RuleFor(c => c.BirthDay, f => f.Date.Past(50, DateTime.Now.AddYears(-18)));
 
             return clientFaker.Generate(count);
@@ -20,10 +21,20 @@ namespace BankSystem.Application.Services
             var employeeFaker = new Faker<Employee>()
                 .RuleFor(e => e.FullName, f => f.Name.FullName())
                 .RuleFor(e => e.PhoneNumber, f => f.Phone.PhoneNumber())
+                .RuleFor(c => c.PassportNumber, f => f.Random.String2(10, "0123456789"))
                 .RuleFor(e => e.BirthDay, f => f.Date.Past(50, DateTime.Now.AddYears(-18)))
                 .RuleFor(e => e.Salary, f => f.Random.Int(30000, 100000));
 
             return employeeFaker.Generate(count);
+        }
+
+        public List<Account> GenerateAccounts(int count)
+        {
+            var accountFaker = new Faker<Account>()
+               .RuleFor(a => a.Currency, f => new Currency(f.Finance.Currency().Code, f.Finance.Currency().Symbol, f.Finance.Currency().Description))
+               .RuleFor(a => a.Amount, f => f.Finance.Amount(10, 10000));
+
+            return accountFaker.Generate(count);
         }
 
         public Dictionary<string, Client> GenerateClientDictionary(List<Client> clients)
@@ -37,8 +48,8 @@ namespace BankSystem.Application.Services
             var accountFaker = new Faker<Account>()
                 .RuleFor(a => a.Currency, f => new Currency(
                     f.Finance.Currency().Code,
-                    f.Finance.Currency().Description,
-                    f.Finance.Currency().Symbol))
+                    f.Finance.Currency().Symbol,
+                    f.Finance.Currency().Description))
                 .RuleFor(a => a.Amount, f => f.Finance.Amount(10, 10000));
 
             return clients.ToDictionary(
