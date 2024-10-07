@@ -17,6 +17,7 @@ namespace BancSystem.App.Tests
             var existingClient = clientAccountDictionary.Keys.First();
             var newClient = new Client
             {
+               PassportNumber = existingClient.PassportNumber,
                FullName = existingClient.FullName,
                BirthDay = existingClient.BirthDay,
                PhoneNumber = existingClient.PhoneNumber,
