@@ -14,15 +14,12 @@
             if (!(obj is Employee employee))
                 return false;
 
-            return FullName == employee.FullName &&
-                   BirthDay == employee.BirthDay &&
-                   Contract == employee.Contract &&
-                   Salary == employee.Salary;
+            return PassportNumber == employee.PassportNumber;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(FullName, BirthDay, Contract, Salary);
+            return HashCode.Combine(PassportNumber);
         }
     }
 }

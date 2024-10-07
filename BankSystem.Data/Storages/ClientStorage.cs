@@ -1,8 +1,9 @@
-﻿using BankSystem.Domain.Models;
+﻿using BankSystem.Application.Interfaces;
+using BankSystem.Domain.Models;
 
 namespace BankSystem.Data.Storages
 {
-    public class ClientStorage
+    public class ClientStorage : IClientStorage
     {
         private Dictionary<Client, List<Account>> _clientAccounts;
 
@@ -11,45 +12,71 @@ namespace BankSystem.Data.Storages
             _clientAccounts = new Dictionary<Client, List<Account>>();
         }
 
-        public void AddClient(Client client)
+        public void Add(Client item)
         {
-            _clientAccounts[client] = new List<Account>();
+            if(_clientAccounts.Keys.Any(x => x.PassportNumber == item.PassportNumber))
+                throw new Exception($"A {nameof(Client)} with the same passport number already exists.");
+
+            _clientAccounts[item] = new List<Account>();
         }
 
-        public void AddAccountToClient(Client client, Account account)
+        public void AddAccount(Client client, Account account)
         {
+            if (!_clientAccounts.ContainsKey(client))
+                throw new Exception($"{nameof(Client)} not found.");
+
             _clientAccounts[client].Add(account);
         }
 
-        public void EditAccount(Client client, Account oldAccount, Account newAccount)
+        public void Update(Client item)
+        {
+            var client = _clientAccounts.Keys.Where(x => x.Equals(item)).First();
+
+            if (client == null)
+                throw new Exception($"{nameof(Client)} not found.");
+
+            client.FullName = item.FullName;
+            client.PhoneNumber = item.PhoneNumber;
+            client.BirthDay = item.BirthDay;
+        }
+
+        public void UpdateAccount(Client client, Account oldAccount, Account newAccount)
         {
             if (!_clientAccounts.TryGetValue(client, out var accounts))
                 throw new Exception($"{nameof(Client)} not found.");
-            
+
             var index = accounts.IndexOf(oldAccount);
 
             if (index == -1)
                 throw new Exception($"{nameof(Account)} not found.");
-            
+
             accounts[index] = newAccount;
         }
 
-        public void EditClient(Client oldClient, Client newClient)
+        public List<Client> Get(Func<Client, bool>? filter)
         {
-            if (!_clientAccounts.ContainsKey(oldClient))
-                throw new Exception($"{nameof(Client)} not found.");
+            var clients = _clientAccounts.Keys.AsEnumerable();
 
-            var accounts = _clientAccounts[oldClient];
-            _clientAccounts.Remove(oldClient);
-            _clientAccounts[newClient] = accounts;
+            if (filter != null)
+                clients = clients.Where(filter);
+
+            return clients.ToList();
         }
 
-        public Client? GetClient(Client client)
+        public void Delete(Client item)
         {
-            if (!_clientAccounts.Keys.Contains(client))
-                return null;
+            if (!_clientAccounts.ContainsKey(item))
+                throw new Exception($"{nameof(Client)} not found.");
 
-            return client;
+            _clientAccounts.Remove(item);
+        }
+
+        public void DeleteAccount(Client client, Account account)
+        {
+            if (!_clientAccounts.TryGetValue(client, out var accounts))
+                throw new Exception($"{nameof(Client)} not found.");
+
+            accounts.Remove(account);
         }
 
         public List<Account> GetClientAccounts(Client client)
@@ -58,55 +85,6 @@ namespace BankSystem.Data.Storages
                 throw new Exception($"{nameof(Client)} not found.");
 
             return accounts;
-        }
-
-        public Client? GetYoungestClient()
-        {
-            return _clientAccounts.Keys.OrderBy(c => c.Age)
-                .FirstOrDefault();
-        }
-
-        public Client? GetOldestClient()
-        {
-            return _clientAccounts.Keys.OrderByDescending(c => c.Age)
-                .FirstOrDefault();
-        }
-
-        public double GetAverageAgeClient()
-        {
-            return _clientAccounts.Keys.Average(c => c.Age);
-        }
-
-        public Dictionary<Client, List<Account>> GetAll()
-        {
-            return _clientAccounts;
-        }
-
-        public Dictionary<Client, List<Account>> GetClientsByFilter(
-            string? fullName,
-            string? phoneNumber,
-            string? passportNumber,
-            DateTime? birthDateTo,
-            DateTime? birthDateFrom)
-        {
-            var clientAccounts = _clientAccounts.AsEnumerable();
-
-            if (!string.IsNullOrWhiteSpace(fullName))
-                clientAccounts = clientAccounts.Where(c => c.Key.FullName.Contains(fullName));
-
-            if (!string.IsNullOrWhiteSpace(phoneNumber))
-                clientAccounts = clientAccounts.Where(c => c.Key.PhoneNumber.Contains(phoneNumber));
-
-            if (!string.IsNullOrWhiteSpace(passportNumber))
-                clientAccounts = clientAccounts.Where(c => c.Key.PassportNumber.Contains(passportNumber));
-
-            if (birthDateFrom.HasValue)
-                clientAccounts = clientAccounts.Where(c => c.Key.BirthDay >= birthDateFrom.Value);
-
-            if (birthDateTo.HasValue)
-                clientAccounts = clientAccounts.Where(c => c.Key.BirthDay <= birthDateTo.Value);
-
-            return clientAccounts.ToDictionary(c => c.Key, c => c.Value);
         }
     }
 }
