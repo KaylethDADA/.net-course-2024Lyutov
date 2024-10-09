@@ -16,170 +16,104 @@ namespace BankSystem.Data.Tests
             var client = testDataGenerator.GenerateClients(1).First();
 
             // Act
-            storage.AddClient(client);
+            storage.Add(client);
 
             // Assert
-            var actualClient = storage.GetClient(client);
+            var actualClient = storage.Get(c => c.PassportNumber == client.PassportNumber).FirstOrDefault();
 
             Assert.NotNull(actualClient);
             Assert.Equal(client, actualClient);
         }
 
         [Fact]
-        public void EditClientPositiveTest()
+        public void UpdateClientPositiveTest()
         {
             // Arrange
             var storage = new ClientStorage();
             var testDataGenerator = new TestDataGenerator();
 
             var oldClient = testDataGenerator.GenerateClients(1).First();
-            storage.AddClient(oldClient);
+            storage.Add(oldClient);
 
-            var newClient = testDataGenerator.GenerateClients(1).First();
+            oldClient.FullName = "dadadawf";
+            oldClient.PhoneNumber = "88800553535";
+
+            var newClient = oldClient;
 
             // Act
-            storage.EditClient(oldClient, newClient);
+            storage.Update(newClient);
 
             // Assert
-            var account = storage.GetClient(newClient);
+            var actualClient = storage.Get(c => c.PassportNumber == newClient.PassportNumber).FirstOrDefault();
 
-            Assert.NotNull(account);
-            Assert.True(storage.GetAll().ContainsKey(newClient));
-            Assert.False(storage.GetAll().ContainsKey(oldClient));
+            Assert.NotNull(actualClient);
+            Assert.Equal(newClient.FullName, actualClient?.FullName);
         }
 
+
         [Fact]
-        public void EditAccountPositiveTest()
+        public void UpdateAccountPositiveTest()
         {
             // Arrange
             var storage = new ClientStorage();
             var testDataGenerator = new TestDataGenerator();
 
             var client = testDataGenerator.GenerateClients(1).First();
-            storage.AddClient(client);
+            storage.Add(client);
 
             var oldAccount = testDataGenerator.GenerateAccounts(1).First();
-            storage.AddAccountToClient(client, oldAccount);
+            storage.AddAccount(client, oldAccount);
 
             var newAccount = testDataGenerator.GenerateAccounts(1).First();
 
             // Act
-            storage.EditAccount(client, oldAccount, newAccount);
-            var clientAccounts = storage.GetClientAccounts(client);
+            storage.UpdateAccount(client, oldAccount, newAccount);
+            var clientAccounts = storage.Get(c => c.PassportNumber == client.PassportNumber).FirstOrDefault();
 
             // Assert
-            Assert.DoesNotContain(oldAccount, clientAccounts);
-            Assert.Contains(newAccount, clientAccounts);
+            Assert.NotNull(clientAccounts);
+            Assert.DoesNotContain(oldAccount, storage.GetClientAccounts(client));
+            Assert.Contains(newAccount, storage.GetClientAccounts(client));
         }
 
         [Fact]
-        public void AddAccountToClientPositiveTest()
+        public void AddAccountPositiveTest()
         {
             // Arrange
             var storage = new ClientStorage();
             var testDataGenerator = new TestDataGenerator();
 
-            var clients = testDataGenerator.GenerateClients(1);
-            var client = clients.First();
-
-            storage.AddClient(client);
+            var client = testDataGenerator.GenerateClients(1).First();
+            storage.Add(client);
 
             var newAccount = testDataGenerator.GenerateAccounts(1).First();
 
             // Act
-            storage.AddAccountToClient(client, newAccount);
+            storage.AddAccount(client, newAccount);
 
             // Assert
             var clientAccounts = storage.GetClientAccounts(client);
-            
+
             Assert.NotNull(clientAccounts);
             Assert.Contains(newAccount, clientAccounts);
         }
 
         [Fact]
-        public void GetClientPositiveTest()
+        public void GetAllPositiveTest()
         {
             // Arrange
             var storage = new ClientStorage();
             var testDataGenerator = new TestDataGenerator();
 
             var expectedClient = testDataGenerator.GenerateClients(1).First();
-            storage.AddClient(expectedClient);
+            storage.Add(expectedClient);
 
             // Act
-            var actualClient = storage.GetClient(expectedClient);
+            var actualClients = storage.Get(null);
 
             // Assert
-            Assert.NotNull(actualClient);
-            Assert.Equal(expectedClient, actualClient);
-        }
-
-        [Fact]
-        public void GetYoungestClientPositiveTest()
-        {
-            // Arrange
-            var storage = new ClientStorage();
-            var testDataGenerator = new TestDataGenerator();
-
-            var clients = testDataGenerator.GenerateClients(10);
-            foreach (var client in clients)
-            {
-                storage.AddClient(client);
-            }
-
-            // Act
-            var youngest = storage.GetYoungestClient();
-
-            // Assert
-            var expectedYoungest = clients.OrderBy(x => x.Age).FirstOrDefault();
-
-            Assert.NotNull(expectedYoungest);
-            Assert.Equal(expectedYoungest, youngest);
-        }
-
-        [Fact]
-        public void GetOldestClientPositiveTest()
-        {
-            // Arrange
-            var storage = new ClientStorage();
-            var testDataGenerator = new TestDataGenerator();
-
-            var clients = testDataGenerator.GenerateClients(10);
-            foreach (var client in clients)
-            {
-                storage.AddClient(client);
-            }
-
-            // Act
-            var oldest = storage.GetOldestClient();
-
-            // Assert
-            var expectedOldest = clients.OrderByDescending(x => x.Age).FirstOrDefault();
-
-            Assert.NotNull(expectedOldest);
-            Assert.Equal(expectedOldest, oldest);
-        }
-
-        [Fact]
-        public void GetAverageAgePositiveTest()
-        {
-            // Arrange
-            var storage = new ClientStorage();
-            var testDataGenerator = new TestDataGenerator();
-
-            var clients = testDataGenerator.GenerateClients(10);
-            foreach (var client in clients)
-            {
-                storage.AddClient(client);
-            }
-
-            // Act
-            var averageAge = storage.GetAverageAgeClient();
-
-            // Assert
-            var expectedAverageAge = clients.Average(x => x.Age);
-
-            Assert.Equal(expectedAverageAge, averageAge);
+            Assert.NotNull(actualClients);
+            Assert.Contains(expectedClient, actualClients);
         }
 
         [Fact]
@@ -190,13 +124,13 @@ namespace BankSystem.Data.Tests
             var testDataGenerator = new TestDataGenerator();
 
             var client = testDataGenerator.GenerateClients(1).First();
-            storage.AddClient(client);
+            storage.Add(client);
 
             var accounts = testDataGenerator.GenerateAccounts(10);
 
             foreach (var account in accounts)
             {
-                storage.AddAccountToClient(client, account);
+                storage.AddAccount(client, account);
             }
 
             // Act
@@ -211,21 +145,63 @@ namespace BankSystem.Data.Tests
         [Fact]
         public void FilterClientsPositiveTest()
         {
-            var storage = new ClientStorage();
-
             // Arrange
+            var storage = new ClientStorage();
+            var testDataGenerator = new TestDataGenerator();
+
             var client1 = new Client { FullName = "John Doe", PhoneNumber = "1234567890", BirthDay = new DateTime(1990, 1, 1), PassportNumber = "123" };
             var client2 = new Client { FullName = "Jane Doe", PhoneNumber = "0987654321", BirthDay = new DateTime(1995, 1, 1), PassportNumber = "456" };
 
-            storage.AddClient(client1);
-            storage.AddClient(client2);
+            storage.Add(client1);
+            storage.Add(client2);
 
             // Act
-            var result = storage.GetClientsByFilter("John", null, null, null, null);
+            var result = storage.Get(c => c.FullName.Contains("John"));
 
             // Assert
             Assert.Single(result);
             Assert.Contains(client1, result);
+        }
+
+        [Fact]
+        public void DeleteClientPositiveTest()
+        {
+            // Arrange
+            var storage = new ClientStorage();
+            var testDataGenerator = new TestDataGenerator();
+
+            var client = testDataGenerator.GenerateClients(1).First();
+            storage.Add(client);
+
+            // Act
+            storage.Delete(client);
+
+            // Assert
+            var actualClient = storage.Get(c => c.PassportNumber == client.PassportNumber);
+            Assert.Empty(actualClient);
+        }
+
+        [Fact]
+        public void DeleteAccountPositiveTest()
+        {
+            // Arrange
+            var storage = new ClientStorage();
+            var testDataGenerator = new TestDataGenerator();
+
+            var client = testDataGenerator.GenerateClients(1).First();
+            storage.Add(client);
+
+            var account = testDataGenerator.GenerateAccounts(1).First();
+            storage.AddAccount(client, account);
+
+            // Act
+            storage.DeleteAccount(client, account);
+
+            // Assert
+            var clientAccounts = storage.Get(c => c.PassportNumber == client.PassportNumber)
+                                        .SelectMany(c => storage.GetClientAccounts(c));
+
+            Assert.DoesNotContain(account, clientAccounts);
         }
     }
 }

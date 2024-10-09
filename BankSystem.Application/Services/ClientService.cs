@@ -1,14 +1,14 @@
 ﻿using BankSystem.Application.Exceptions;
-using BankSystem.Data.Storages;
+using BankSystem.Application.Interfaces;
 using BankSystem.Domain.Models;
 
 namespace BankSystem.Application.Services
 {
     public class ClientService
     {
-        private readonly ClientStorage _clientStorage;
+        private readonly IClientStorage _clientStorage;
 
-        public ClientService(ClientStorage clientStorage)
+        public ClientService(IClientStorage clientStorage)
         {
             _clientStorage = clientStorage;
         }
@@ -21,18 +21,12 @@ namespace BankSystem.Application.Services
             if (string.IsNullOrWhiteSpace(client.PassportNumber))
                 throw new ClientValidationException($"The {nameof(Client)} must have passport details.");
 
-            var existingClient = _clientStorage.GetAll().Keys
-                .FirstOrDefault(c => c.PassportNumber == client.PassportNumber);
-
-            if (existingClient != null)
-                throw new ClientValidationException($"A {nameof(Client)} with the same passport number already exists.");
-
             try
             {
-                _clientStorage.AddClient(client);
+                _clientStorage.Add(client);
 
                 var defaultAccount = GetDefaultAccount();
-                _clientStorage.AddAccountToClient(client, defaultAccount);
+                _clientStorage.AddAccount(client, defaultAccount);
             }
             catch (Exception ex)
             {
@@ -40,14 +34,11 @@ namespace BankSystem.Application.Services
             }
         }
 
-        public void AddAccountToClient(Client client, Account account)
+        public void AddAccount(Client client, Account account)
         {
-            if (_clientStorage.GetClient(client) is null)
-                throw new ClientValidationException($"{nameof(Client)} not found.");
-
             try
             {
-                _clientStorage.AddAccountToClient(client, account);
+                _clientStorage.AddAccount(client, account);
             }
             catch (Exception ex)
             {
@@ -55,9 +46,9 @@ namespace BankSystem.Application.Services
             }
         }
 
-        public void EditClient(Client oldClient, Client newClient)
+        public void UpdateClient(Client newClient)
         {
-            if (oldClient == null || newClient == null)
+            if (newClient == null)
                 throw new ClientValidationException("The old or new client cannot be zero.");
 
             if (newClient.Age < 18)
@@ -68,7 +59,7 @@ namespace BankSystem.Application.Services
 
             try
             {
-                _clientStorage.EditClient(oldClient, newClient);
+                _clientStorage.Update(newClient);
             }
             catch (Exception ex)
             {
@@ -76,7 +67,7 @@ namespace BankSystem.Application.Services
             }
         }
 
-        public void EditAccount(Client client, Account oldAccount, Account newAccount)
+        public void UpdateAccount(Client client, Account oldAccount, Account newAccount)
         {
             if (oldAccount == null || newAccount == null)
                 throw new ClientValidationException("The old or new personal account cannot be zero.");
@@ -86,7 +77,7 @@ namespace BankSystem.Application.Services
 
             try
             {
-                _clientStorage.EditAccount(client, oldAccount, newAccount);
+                _clientStorage.UpdateAccount(client, oldAccount, newAccount);
             }
             catch (Exception ex)
             {
@@ -94,14 +85,33 @@ namespace BankSystem.Application.Services
             }
         }
 
-        public Dictionary<Client, List<Account>> GetClientsByFilter(
-            string? fullName,
-            string? phoneNumber,
-            string? passportNumber,
-            DateTime? birthDateTo,
-            DateTime? birthDateFrom)
+        public List<Client> Get(Func<Client, bool>? filter)
         {
-            return _clientStorage.GetClientsByFilter(fullName, phoneNumber, passportNumber, birthDateTo, birthDateFrom);
+            return _clientStorage.Get(filter);
+        }
+
+        public void DeleteClient(Client client)
+        {
+            try
+            {
+                _clientStorage.Delete(client);
+            }
+            catch (Exception ex)
+            {
+                throw new EmployeeException($"An error occurred while deleting {nameof(Client)}.", ex);
+            }
+        }
+
+        public void DeleteAccount(Client client, Account account)
+        {
+            try
+            {
+                _clientStorage.DeleteAccount(client, account);
+            }
+            catch (Exception ex)
+            {
+                throw new EmployeeException($"An error occurred while deleting {nameof(Client)}.", ex);
+            }
         }
 
         private Account GetDefaultAccount()

@@ -10,13 +10,12 @@
             if (!(obj is Client client))
                 return false;
 
-            return FullName == client.FullName &&
-                   BirthDay.Date == client.BirthDay.Date;
+            return PassportNumber == client.PassportNumber;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(FullName, BirthDay.Date);
+            return HashCode.Combine(PassportNumber);
         }
     }
 }

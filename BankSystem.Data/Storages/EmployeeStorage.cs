@@ -1,8 +1,9 @@
-﻿using BankSystem.Domain.Models;
+﻿using BankSystem.Application.Interfaces;
+using BankSystem.Domain.Models;
 
 namespace BankSystem.Data.Storages
 {
-    public class EmployeeStorage
+    public class EmployeeStorage : IEmployeeStorage
     {
         private List<Employee> _employees;
 
@@ -11,74 +12,44 @@ namespace BankSystem.Data.Storages
             _employees = new List<Employee>();
         }
 
-        public void AddEmployee(Employee employee)
+        public void Add(Employee item)
         {
-            _employees.Add(employee);
+            if (_employees.Any(x => x.PassportNumber == item.PassportNumber))
+                throw new Exception($"A {nameof(Employee)} with the same passport number already exists.");
+
+            _employees.Add(item);
         }
 
-        public void UpdateEmployee(Employee oldEmployee, Employee newEmployee)
+        public void Update(Employee item)
         {
-            var existingEmployee = _employees.FirstOrDefault(e => e.Equals(oldEmployee));
+            var existingEmployee = _employees.FirstOrDefault(x => x.Equals(item));
             
             if (existingEmployee == null)
                 throw new Exception($"{nameof(Employee)} not found.");
 
-            existingEmployee.FullName = newEmployee.FullName;
-            existingEmployee.BirthDay = newEmployee.BirthDay;
-            existingEmployee.PhoneNumber = newEmployee.PhoneNumber;
-            existingEmployee.Salary = newEmployee.Salary;
-            existingEmployee.Contract = newEmployee.Contract;
+            existingEmployee.FullName = item.FullName;
+            existingEmployee.BirthDay = item.BirthDay;
+            existingEmployee.PhoneNumber = item.PhoneNumber;
+            existingEmployee.Salary = item.Salary;
+            existingEmployee.Contract = item.Contract;
         }
 
-        public List<Employee> GetAllEmployees()
+        public List<Employee> Get(Func<Employee, bool>? filter)
         {
-            return _employees;
+            var employees = _employees.AsEnumerable();
+
+            if (filter != null)
+                employees = employees.Where(filter);
+
+            return employees.ToList();
         }
 
-        public Employee? GetEmployee(Employee employee)
+        public void Delete(Employee item)
         {
-            return _employees.FirstOrDefault(x => x.Equals(employee));
-        }
+            if (!_employees.Contains(item))
+                throw new Exception($"{nameof(Employee)} not found.");
 
-        public Employee? GetYoungestEmployee()
-        {
-            return _employees.OrderBy(c => c.Age)
-                .FirstOrDefault();
-        }
-
-        public Employee? GetOldestEmployee()
-        {
-            return _employees.OrderByDescending(c => c.Age)
-                .FirstOrDefault();
-        }
-
-        public double GetAverageAgeEmployee()
-        {
-            return _employees.Average(c => c.Age);
-        }
-
-        public List<Employee> GetEmployeeByFilter(
-            string? fullName,
-            string? phoneNumber,
-            string? passportNumber,
-            DateTime? birthDateTo,
-            DateTime? birthDateFrom)
-        {
-            var clients = _employees.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(fullName))
-                clients = clients.Where(c => c.FullName.Contains(fullName));
-
-            if (!string.IsNullOrWhiteSpace(phoneNumber))
-                clients = clients.Where(c => c.PhoneNumber.Contains(phoneNumber));
-
-            if (birthDateFrom.HasValue)
-                clients = clients.Where(c => c.BirthDay >= birthDateFrom.Value);
-
-            if (birthDateTo.HasValue)
-                clients = clients.Where(c => c.BirthDay <= birthDateTo.Value);
-
-            return clients.ToList();
+            _employees.Remove(item);
         }
     }
 }
