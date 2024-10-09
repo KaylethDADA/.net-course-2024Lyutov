@@ -1,10 +1,10 @@
 ﻿namespace BankSystem.Application.Interfaces
 {
-    public interface IStorage<TType>
+    public interface IStorage<T, TResult>
     {
-        void Add(TType item); 
-        void Update(TType item);
-        List<TType> Get(Func<TType, bool>? filter);
-        void Delete(TType item);
+        void Add(T item); 
+        void Update(T item);
+        TResult Get(Func<T, bool>? filter);
+        void Delete(T item);
     }
 }

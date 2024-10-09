@@ -2,7 +2,7 @@
 
 namespace BankSystem.Application.Interfaces
 {
-    public interface IClientStorage : IStorage<Client>
+    public interface IClientStorage : IStorage<Client, Dictionary<Client, List<Account>>>
     {
         void AddAccount(Client client, Account account);
         void UpdateAccount(Client client, Account oldAccount, Account newAccount);

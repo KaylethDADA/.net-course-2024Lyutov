@@ -53,14 +53,14 @@ namespace BankSystem.Data.Storages
             accounts[index] = newAccount;
         }
 
-        public List<Client> Get(Func<Client, bool>? filter)
+        public Dictionary<Client, List<Account>> Get(Func<Client, bool>? filter)
         {
-            var clients = _clientAccounts.Keys.AsEnumerable();
+            var clients = _clientAccounts.AsEnumerable();
 
             if (filter != null)
-                clients = clients.Where(filter);
+                clients = clients.Where(x => filter(x.Key));
 
-            return clients.ToList();
+            return clients.ToDictionary(x => x.Key, x => x.Value);
         }
 
         public void Delete(Client item)
@@ -80,7 +80,7 @@ namespace BankSystem.Data.Storages
         }
 
         public List<Account> GetClientAccounts(Client client)
-        {
+        {   
             if (!_clientAccounts.TryGetValue(client, out var accounts))
                 throw new Exception($"{nameof(Client)} not found.");
 

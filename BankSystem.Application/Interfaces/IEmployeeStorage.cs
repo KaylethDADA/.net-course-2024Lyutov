@@ -2,7 +2,7 @@
 
 namespace BankSystem.Application.Interfaces
 {
-    public interface IEmployeeStorage : IStorage<Employee>
+    public interface IEmployeeStorage : IStorage<Employee, List<Employee>>
     {
     }
 }
