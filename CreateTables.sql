@@ -1,4 +1,4 @@
-create table currencies
+﻿create table currencies
 (
 	Id uuid primary key,
 	Code varchar not null,
