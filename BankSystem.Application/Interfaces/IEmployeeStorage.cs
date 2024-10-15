@@ -2,7 +2,8 @@
 
 namespace BankSystem.Application.Interfaces
 {
-    public interface IEmployeeStorage : IStorage<Employee, List<Employee>>
+    public interface IEmployeeStorage : IStorage<Employee>
     {
+        Employee GetById(Guid id);
     }
 }

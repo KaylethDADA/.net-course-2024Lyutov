@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-
-namespace BankSystem.Domain.Models
+﻿namespace BankSystem.Domain.Models
 {
     public class FullName
     {
