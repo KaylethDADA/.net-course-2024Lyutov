@@ -2,7 +2,10 @@
 {
     public class Account
     {
-        public Currency Currency { get; init; }
+        public Guid Id { get; set; }
+        public string CurrencyName { get; set; }
         public decimal Amount { get; set; }
+        public Guid ClientId { get; set; }
+        public Client Client { get; set; }
     }
 }
