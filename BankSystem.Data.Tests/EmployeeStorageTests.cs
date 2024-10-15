@@ -8,20 +8,20 @@ namespace BankSystem.Data.Tests
     {
         private readonly BankSystemDbContext _dbContext;
         private readonly EmployeeStorage _employeeStorage;
+        private readonly TestDataGenerator _testDataGenerator;
 
         public EmployeeStorageTests()
         {
             _dbContext = new BankSystemDbContext();
             _employeeStorage = new EmployeeStorage(_dbContext);
+            _testDataGenerator = new TestDataGenerator();
         }
 
         [Fact]
         public void AddEmployeePositiveTest()
         {
             // Arrange
-            var testDataGenerator = new TestDataGenerator();
-
-            var employee = testDataGenerator.GenerateEmployees(1).First();
+            var employee = _testDataGenerator.GenerateEmployees(1).First();
 
             // Act
             _employeeStorage.Add(employee);
@@ -37,8 +37,7 @@ namespace BankSystem.Data.Tests
         public void UpdateEmployeePositiveTest()
         {
             // Arrange
-            var testDataGenerator = new TestDataGenerator();
-            var employee = testDataGenerator.GenerateEmployees(1).First();
+            var employee = _testDataGenerator.GenerateEmployees(1).First();
 
             _employeeStorage.Add(employee);
 
@@ -68,11 +67,29 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
+        public void GetByIdEmployeePositiveTest()
+        {
+            // Arrange
+            var employees = _testDataGenerator.GenerateEmployees(10);
+            foreach (var employee in employees)
+            {
+                _employeeStorage.Add(employee);
+            }
+            var employeeToFind = employees.First();
+
+            // Act
+            var foundEmployee = _employeeStorage.GetById(employeeToFind.Id);
+
+            // Assert
+            Assert.NotNull(foundEmployee);
+            Assert.Equal(employeeToFind, foundEmployee);
+        }
+
+        [Fact]
         public void GetPageEmployeesPositiveTest()
         {
             // Arrange
-            var testDataGenerator = new TestDataGenerator();
-            var employees = testDataGenerator.GenerateEmployees(10);
+            var employees = _testDataGenerator.GenerateEmployees(10);
             foreach (var employee in employees)
             {
                 _employeeStorage.Add(employee);
@@ -90,8 +107,7 @@ namespace BankSystem.Data.Tests
         public void DeleteEmployeePositiveTest()
         {
             // Arrange
-            var testDataGenerator = new TestDataGenerator();
-            var employee = testDataGenerator.GenerateEmployees(1).First();
+            var employee = _testDataGenerator.GenerateEmployees(1).First();
             _employeeStorage.Add(employee);
 
             // Act
@@ -100,26 +116,6 @@ namespace BankSystem.Data.Tests
             // Assert
             var deletedEmployees = _dbContext.Clients.FirstOrDefault(c => c.Id == employee.Id);
             Assert.Null(deletedEmployees);
-        }
-
-        [Fact]
-        public void GetByIdEmployeePositiveTest()
-        {
-            // Arrange
-            var testDataGenerator = new TestDataGenerator();
-            var employees = testDataGenerator.GenerateEmployees(10);
-            foreach (var employee in employees)
-            {
-                _employeeStorage.Add(employee);
-            }
-            var employeeToFind = employees.First();
-
-            // Act
-            var foundEmployee = _employeeStorage.GetById(employeeToFind.Id);
-
-            // Assert
-            Assert.NotNull(foundEmployee);
-            Assert.Equal(employeeToFind, foundEmployee);
         }
     }
 }

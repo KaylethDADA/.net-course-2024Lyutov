@@ -8,6 +8,7 @@ namespace BancSystem.App.Tests
     public class ClientServiceTests
     {
         private readonly ClientStorage _clientStorage;
+        private readonly CurrencyStorage _currencyStorage;
         private readonly ClientService _clientService;
         private readonly TestDataGenerator _testDataGenerator;
 
@@ -15,7 +16,8 @@ namespace BancSystem.App.Tests
         {
             var dbContext = new BankSystemDbContext();
             _clientStorage = new ClientStorage(dbContext);
-            _clientService = new ClientService(_clientStorage);
+            _currencyStorage = new CurrencyStorage(dbContext);
+            _clientService = new ClientService(_clientStorage, _currencyStorage);
             _testDataGenerator = new TestDataGenerator();
         }
 
@@ -40,7 +42,7 @@ namespace BancSystem.App.Tests
         {
             // Arrange
             var client = _testDataGenerator.GenerateClients(1).First();
-            var account = new Account { CurrencyName = "USD", Amount = 1000 };
+            var account = _testDataGenerator.GenerateAccounts(1, _testDataGenerator.GenerateCurrencies(1)).First();
 
             _clientService.AddClient(client);
 
@@ -83,11 +85,14 @@ namespace BancSystem.App.Tests
         {
             // Arrange
             var client = _testDataGenerator.GenerateClients(1).First();
-            var oldAccount = new Account { Id = Guid.NewGuid(), CurrencyName = "USD", Amount = 500 };
-            var newAccount = new Account { Id = oldAccount.Id, CurrencyName = "USD", Amount = 1000 };
+            var oldAccount = _testDataGenerator.GenerateAccounts(1, _testDataGenerator.GenerateCurrencies(1)).First();
+            var newAccount = _testDataGenerator.GenerateAccounts(1, _testDataGenerator.GenerateCurrencies(1)).First();
 
             _clientStorage.Add(client);
             _clientStorage.AddAccount(client.Id, oldAccount);
+
+            newAccount.Id = oldAccount.Id;
+            newAccount.ClientId = client.Id;
 
             // Act
             _clientService.UpdateAccount(newAccount);
@@ -127,8 +132,8 @@ namespace BancSystem.App.Tests
             _clientService.DeleteClient(client.Id);
 
             // Assert
-            var storedClients = _clientService.Get(c => true, 1, 10);
-            Assert.DoesNotContain(client, storedClients);
+            var exClients = _clientService.GetById(client.Id);
+            Assert.Null(exClients);
         }
 
         [Fact]
@@ -136,7 +141,7 @@ namespace BancSystem.App.Tests
         {
             // Arrange
             var client = _testDataGenerator.GenerateClients(1).First();
-            var account = new Account { CurrencyName = "USD", Amount = 1000 };
+            var account = _testDataGenerator.GenerateAccounts(1, _testDataGenerator.GenerateCurrencies(1)).First();
 
             _clientService.AddClient(client);
             _clientService.AddAccount(client.Id, account);

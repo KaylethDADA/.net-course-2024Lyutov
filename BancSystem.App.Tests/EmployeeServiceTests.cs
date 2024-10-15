@@ -114,10 +114,10 @@ namespace BancSystem.App.Tests
 
             // Act
             _employeeService.Delete(employee.Id);
-            var allEmployees = _employeeService.Get(e => true, 1, 10); 
 
             // Assert
-            Assert.DoesNotContain(allEmployees, e => e.Id == employee.Id);
+            var exEmployees = _employeeService.GetById(employee.Id);
+            Assert.Null(exEmployees);
         }
     } 
 }

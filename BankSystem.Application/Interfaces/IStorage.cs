@@ -6,6 +6,7 @@ namespace BankSystem.Application.Interfaces
     {
         void Add(T item); 
         void Update(T item);
+        T? GetById(Guid Id);
         ICollection<T> Get(Expression<Func<T, bool>> filter, int pageNumber, int pageSize);
         void Delete(Guid id);
     }

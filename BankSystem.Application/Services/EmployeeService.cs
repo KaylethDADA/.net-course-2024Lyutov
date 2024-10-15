@@ -5,11 +5,11 @@ using System.Linq.Expressions;
 
 namespace BankSystem.Application.Services
 {
-    public class EmployeeService
+    public class EmployeeService 
     {
-        private readonly IEmployeeStorage _employeeStorage;
+        private readonly IStorage<Employee> _employeeStorage;
 
-        public EmployeeService(IEmployeeStorage employeeStorage)
+        public EmployeeService(IStorage<Employee> employeeStorage)
         {
             _employeeStorage = employeeStorage;
         }

@@ -14,14 +14,13 @@ namespace BankSystem.Data.EntityConfigurations
                 .IsRequired()
                 .HasColumnType("decimal(18,2)");
 
-            builder.Property(x => x.CurrencyName)
-                .IsRequired()
-                .HasMaxLength(50);
-
             builder.HasOne(x => x.Client)
                 .WithMany(x => x.Accounts)
-                .HasForeignKey(x => x.ClientId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(x => x.ClientId);
+
+            builder.HasOne(x => x.Currency)
+                .WithMany(x => x.Accounts)
+                .HasForeignKey(x => x.CurrencyId);
         }
     }
 }

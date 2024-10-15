@@ -8,20 +8,20 @@ namespace BankSystem.Data.Tests
     {
         private readonly BankSystemDbContext _dbContext;
         private readonly ClientStorage _clientStorage;
+        private readonly TestDataGenerator _testDataGenerator;
 
         public ClientStorageTests()
         {
             _dbContext = new BankSystemDbContext();
             _clientStorage = new ClientStorage(_dbContext);
+            _testDataGenerator = new TestDataGenerator();
         }
 
         [Fact]
         public void AddClientPositiveTest()
         {
             // Arrange
-            var testDataGenerator = new TestDataGenerator();
-
-            var client = testDataGenerator.GenerateClients(1).First();
+            var client = _testDataGenerator.GenerateClients(1).First();
 
             // Act
             _clientStorage.Add(client);
@@ -34,12 +34,29 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
+        public void AddAccountPositiveTest()
+        {
+            // Arrange
+            var client = _testDataGenerator.GenerateClients(1).First();
+            _clientStorage.Add(client);
+
+            var account = _testDataGenerator.GenerateAccounts(1, _testDataGenerator.GenerateCurrencies(1)).First();
+
+            // Act
+            _clientStorage.AddAccount(client.Id, account);
+
+            // Assert
+            var clientAccounts = _clientStorage.GetAccountsByClientId(client.Id);
+
+            Assert.NotNull(clientAccounts);
+            Assert.Contains(clientAccounts, a => a.Id == account.Id);
+        }
+
+        [Fact]
         public void UpdateClientPositiveTest()
         {
             // Arrange
-            var testDataGenerator = new TestDataGenerator();
-
-            var client = testDataGenerator.GenerateClients(1).First();
+            var client = _testDataGenerator.GenerateClients(1).First();
             _clientStorage.Add(client);
 
             var upClient = new Client
@@ -63,36 +80,13 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
-        public void AddAccountPositiveTest()
-        {
-            // Arrange
-            var testDataGenerator = new TestDataGenerator();
-
-            var client = testDataGenerator.GenerateClients(1).First();
-            _clientStorage.Add(client);
-
-            var account = testDataGenerator.GenerateAccounts(1).First();
-
-            // Act
-            _clientStorage.AddAccount(client.Id, account);
-
-            // Assert
-            var clientAccounts = _clientStorage.GetAccountsByClientId(client.Id);
-
-            Assert.NotNull(clientAccounts);
-            Assert.Contains(clientAccounts, a => a.Id == account.Id);
-        }
-
-        [Fact]
         public void UpdateAccountPositiveTest()
         {
             // Arrange
-            var testDataGenerator = new TestDataGenerator();
-
-            var client = testDataGenerator.GenerateClients(1).First();
+            var client = _testDataGenerator.GenerateClients(1).First();
             _clientStorage.Add(client);
 
-            var oldAccount = testDataGenerator.GenerateAccounts(1).First();
+            var oldAccount = _testDataGenerator.GenerateAccounts(1, _testDataGenerator.GenerateCurrencies(1)).First();
             _clientStorage.AddAccount(client.Id, oldAccount);
 
             oldAccount.Amount = 2000;
@@ -112,9 +106,7 @@ namespace BankSystem.Data.Tests
         public void GetByIdClientPositiveTest()
         {
             // Arrange
-            var testDataGenerator = new TestDataGenerator();
-
-            var client = testDataGenerator.GenerateClients(1).First();
+            var client = _testDataGenerator.GenerateClients(1).First();
             _clientStorage.Add(client);
 
             // Act
@@ -126,50 +118,11 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
-        public void DeleteClientPositiveTest()
+        public void GetFilterClientsPositiveTest()
         {
             // Arrange
-            var testDataGenerator = new TestDataGenerator();
-
-            var client = testDataGenerator.GenerateClients(1).First();
-            _clientStorage.Add(client);
-
-            // Act
-            _clientStorage.Delete(client.Id);
-
-            // Assert
-            var deletedClient = _dbContext.Clients.FirstOrDefault(c => c.Id == client.Id);
-            Assert.Null(deletedClient);
-        }
-
-        [Fact]
-        public void DeleteAccountPositiveTest()
-        {
-            // Arrange
-            var testDataGenerator = new TestDataGenerator();
-
-            var client = testDataGenerator.GenerateClients(1).First();
-            _clientStorage.Add(client);
-
-            var account = testDataGenerator.GenerateAccounts(1).First();
-            _clientStorage.AddAccount(client.Id, account);
-
-            // Act
-            _clientStorage.DeleteAccount(account.Id);
-
-            // Assert
-            var deletedAccount = _dbContext.Accounts.FirstOrDefault(a => a.Id == account.Id);
-            Assert.Null(deletedAccount);
-        }
-
-        [Fact]
-        public void FilterClientsPositiveTest()
-        {
-            // Arrange
-            var testDataGenerator = new TestDataGenerator();
-
-            var client1 = testDataGenerator.GenerateClients(1).First();
-            var client2 = testDataGenerator.GenerateClients(1).First();
+            var client1 = _testDataGenerator.GenerateClients(1).First();
+            var client2 = _testDataGenerator.GenerateClients(1).First();
 
             _clientStorage.Add(client1);
             _clientStorage.Add(client2);
@@ -186,25 +139,72 @@ namespace BankSystem.Data.Tests
         public void GetAccountsByClientIdPositiveTest()
         {
             // Arrange
-            var testDataGenerator = new TestDataGenerator();
-            var client = testDataGenerator.GenerateClients(1).First();
+            var client = _testDataGenerator.GenerateClients(1).First();
 
             _clientStorage.Add(client);
 
-            var account1 = new Account { Id = Guid.NewGuid(), ClientId = client.Id, CurrencyName = "USD", Amount = 100 };
-            var account2 = new Account { Id = Guid.NewGuid(), ClientId = client.Id, CurrencyName = "EUR", Amount = 200 };
+            var accounts = _testDataGenerator.GenerateAccounts(1, _testDataGenerator.GenerateCurrencies(5));
 
-            _clientStorage.AddAccount(client.Id, account1);
-            _clientStorage.AddAccount(client.Id, account2);
+            foreach (var account in accounts)
+            {
+                _clientStorage.AddAccount(client.Id, account);
+            }
 
             // Act
             var result = _clientStorage.GetAccountsByClientId(client.Id);
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(2, result.Count());
-            Assert.Contains(result, a => a.CurrencyName == "USD" && a.Amount == 100);
-            Assert.Contains(result, a => a.CurrencyName == "EUR" && a.Amount == 200);
+            Assert.Equal(accounts.Count, result.Count);
+        }
+
+        [Fact]
+        public void GetByPassportNumberPositiveTest()
+        {
+            // Arrange
+            var client = _testDataGenerator.GenerateClients(1).First();
+
+            _clientStorage.Add(client);
+
+            // Act
+            var result = _clientStorage.GetByPassportNumber(client.PassportNumber);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(result, client);
+        }
+
+        [Fact]
+        public void DeleteClientPositiveTest()
+        {
+            // Arrange
+            var client = _testDataGenerator.GenerateClients(1).First();
+            _clientStorage.Add(client);
+
+            // Act
+            _clientStorage.Delete(client.Id);
+
+            // Assert
+            var deletedClient = _dbContext.Clients.FirstOrDefault(c => c.Id == client.Id);
+            Assert.Null(deletedClient);
+        }
+
+        [Fact]
+        public void DeleteAccountPositiveTest()
+        {
+            // Arrange
+            var client = _testDataGenerator.GenerateClients(1).First();
+            _clientStorage.Add(client);
+
+            var account = _testDataGenerator.GenerateAccounts(1, _testDataGenerator.GenerateCurrencies(1)).First();
+            _clientStorage.AddAccount(client.Id, account);
+
+            // Act
+            _clientStorage.DeleteAccount(account.Id);
+
+            // Assert
+            var deletedAccount = _dbContext.Accounts.FirstOrDefault(a => a.Id == account.Id);
+            Assert.Null(deletedAccount);
         }
     }
 }

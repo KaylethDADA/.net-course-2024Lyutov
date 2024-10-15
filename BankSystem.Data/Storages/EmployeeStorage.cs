@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 namespace BankSystem.Data.Storages
 {
-    public class EmployeeStorage : IEmployeeStorage
+    public class EmployeeStorage : IStorage<Employee>
     {
         private readonly BankSystemDbContext _dbContext;
 
@@ -48,13 +48,9 @@ namespace BankSystem.Data.Storages
             return employees;
         }
 
-        public Employee GetById(Guid id)
+        public Employee? GetById(Guid id)
         {
-            var employee = _dbContext.Employees.FirstOrDefault(x => x.Id == id);
-            if (employee == null)
-                throw new Exception($"{nameof(Client)} not found.");
-
-            return employee;
+            return _dbContext.Employees.FirstOrDefault(x => x.Id == id); 
         }
 
         public void Delete(Guid id)

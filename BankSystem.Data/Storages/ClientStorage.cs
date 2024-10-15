@@ -15,21 +15,14 @@ namespace BankSystem.Data.Storages
 
         public void Add(Client item)
         {
-            var client = _dbContext.Clients.FirstOrDefault(x => x.PassportNumber == item.PassportNumber);
-            if (client != null)
-                throw new Exception($"A {nameof(Client)} with the same passport number already exists.");
-
-            _dbContext.Clients.Add(item);
+            _dbContext.Clients.Add(item);            
             _dbContext.SaveChanges();
         }
 
         public void AddAccount(Guid clientId, Account account)
         {
-            var client = _dbContext.Clients.FirstOrDefault(x => x.Id == clientId);
-            if (client == null)
-                throw new Exception($"{nameof(Client)} not found.");
-
             account.ClientId = clientId;
+            
             _dbContext.Accounts.Add(account);
             _dbContext.SaveChanges();
         }
@@ -37,8 +30,6 @@ namespace BankSystem.Data.Storages
         public void Update(Client item)
         {
             var client = _dbContext.Clients.FirstOrDefault(x => x.Id == item.Id);
-            if (client == null)
-                throw new Exception($"{nameof(Client)} not found.");
 
             client.FullName = item.FullName;
             client.PhoneNumber = item.PhoneNumber;
@@ -50,8 +41,6 @@ namespace BankSystem.Data.Storages
         public void UpdateAccount(Account account)
         {
             var exAccount = _dbContext.Accounts.FirstOrDefault(x => x.Id == account.Id);
-            if (exAccount == null)
-                throw new Exception($"{nameof(Account)} not found.");
 
             exAccount.Amount = account.Amount;
 
@@ -67,13 +56,9 @@ namespace BankSystem.Data.Storages
             return clients;
         }
 
-        public Client GetById(Guid id)
+        public Client? GetById(Guid id)
         {
-            var client = _dbContext.Clients.FirstOrDefault(x => x.Id == id);
-            if (client == null)
-                throw new Exception($"{nameof(Client)} not found.");
-
-            return client;
+            return _dbContext.Clients.FirstOrDefault(x => x.Id == id);
         }
 
         public ICollection<Account> GetAccountsByClientId(Guid clientId)
@@ -81,12 +66,14 @@ namespace BankSystem.Data.Storages
             return _dbContext.Accounts.Where(x => x.ClientId == clientId).ToList();
         }
 
+        public Client? GetByPassportNumber(string passportNumber)
+        {
+            return _dbContext.Clients.FirstOrDefault(c => c.PassportNumber == passportNumber);
+        }
+
         public void Delete(Guid id)
         {
             var client = _dbContext.Clients.FirstOrDefault(x => x.Id == id);
-
-            if (client == null)
-                throw new Exception($"{nameof(Client)} not found.");
 
             _dbContext.Clients.Remove(client);
             _dbContext.SaveChanges();
@@ -94,11 +81,11 @@ namespace BankSystem.Data.Storages
 
         public void DeleteAccount(Guid accountId)
         {
-            var exAccount = _dbContext.Accounts.FirstOrDefault(x => x.Id == accountId);
-            if (exAccount == null)
+            var account = _dbContext.Accounts.FirstOrDefault(x => x.Id == accountId);
+            if (account == null)
                 throw new Exception($"{nameof(Account)} not found.");
 
-            _dbContext.Accounts.Remove(exAccount);
+            _dbContext.Accounts.Remove(account);
             _dbContext.SaveChanges();
         }
     }

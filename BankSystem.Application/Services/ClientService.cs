@@ -8,10 +8,12 @@ namespace BankSystem.Application.Services
     public class ClientService
     {
         private readonly IClientStorage _clientStorage;
+        private readonly ICurrencyStorage _currencyStorage;
 
-        public ClientService(IClientStorage clientStorage)
+        public ClientService(IClientStorage clientStorage, ICurrencyStorage currencyStorage)
         {
             _clientStorage = clientStorage;
+            _currencyStorage = currencyStorage;
         }
 
         public void AddClient(Client client)
@@ -22,13 +24,17 @@ namespace BankSystem.Application.Services
             if (string.IsNullOrWhiteSpace(client.PassportNumber))
                 throw new ClientValidationException($"The {nameof(Client)} must have passport details.");
 
+            var result = GetByPassportNumber(client.PassportNumber);
+            if (result != null)
+                throw new ClientValidationException($"A {nameof(Client)} with the same passport number already exists.");
+
             try
             {
                 _clientStorage.Add(client);
 
                 var defaultAccount = new Account
                 {
-                    CurrencyName = "USD",
+                    Currency = _currencyStorage.GetDefaultCurrency(),
                     Amount = 0
                 };
 
@@ -42,6 +48,10 @@ namespace BankSystem.Application.Services
 
         public void AddAccount(Guid clientId, Account account)
         {
+            var client = GetById(clientId);
+            if (client == null)
+                throw new ClientValidationException($"{nameof(Client)} not found.");
+
             try
             {
                 _clientStorage.AddAccount(clientId, account);
@@ -63,6 +73,10 @@ namespace BankSystem.Application.Services
             if (string.IsNullOrWhiteSpace(client.PassportNumber))
                 throw new ClientValidationException($"The {nameof(Client)} must have passport details.");
 
+            var result = GetById(client.Id);
+            if (result == null)
+                throw new ClientValidationException($"{nameof(Client)} not found.");
+
             try
             {
                 _clientStorage.Update(client);
@@ -77,6 +91,10 @@ namespace BankSystem.Application.Services
         {
             if (account.Amount < 0)
                 throw new ClientValidationException("The new account balance cannot be negative.");
+
+            var result = GetAccountsByClientId(account.ClientId).FirstOrDefault(x => x.Id == account.Id);
+            if (result == null)
+                throw new Exception($"{nameof(Account)} not found.");
 
             try
             {
@@ -106,7 +124,7 @@ namespace BankSystem.Application.Services
             }
         }
 
-        public Client GetById(Guid id)
+        public Client? GetById(Guid id)
         {
             try
             {
@@ -130,8 +148,20 @@ namespace BankSystem.Application.Services
             }
         }
 
+        public Client? GetByPassportNumber(string passportNumber)
+        {
+            if (string.IsNullOrWhiteSpace(passportNumber))
+                throw new ClientValidationException($"The {nameof(Client)} must have passport details.");
+           
+            return  _clientStorage.GetByPassportNumber(passportNumber);
+        }
+
         public void DeleteClient(Guid clientId)
         {
+            var client = _clientStorage.GetById(clientId);
+            if (client == null)
+                throw new Exception($"{nameof(Client)} not found.");
+
             try
             {
                 _clientStorage.Delete(clientId);
