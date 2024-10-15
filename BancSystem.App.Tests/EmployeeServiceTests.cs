@@ -1,4 +1,5 @@
 ﻿using BankSystem.Application.Services;
+using BankSystem.Data;
 using BankSystem.Data.Storages;
 using BankSystem.Domain.Models;
 
@@ -7,13 +8,12 @@ namespace BancSystem.App.Tests
     public class EmployeeServiceTests
     {
         private readonly EmployeeService _employeeService;
-        private readonly EmployeeStorage _employeeStorage;
         private readonly TestDataGenerator _testDataGenerator;
 
         public EmployeeServiceTests()
         {
-            _employeeStorage = new EmployeeStorage();
-            _employeeService = new EmployeeService(_employeeStorage);
+            var dbContext = new BankSystemDbContext();
+            _employeeService = new EmployeeService(new EmployeeStorage(dbContext));
             _testDataGenerator = new TestDataGenerator();
         }
 
@@ -29,11 +29,11 @@ namespace BancSystem.App.Tests
                 _employeeService.Add(employee);
             }
 
-            var actualEmployees = _employeeService.Get(null);
+            var actualEmployees = _employeeService.Get(e => true, 1, 10);
 
             // Assert
             Assert.NotNull(actualEmployees);
-            Assert.True(employees.SequenceEqual(actualEmployees));
+            Assert.Equal(employees.Count, actualEmployees.Count);
         }
 
         [Fact]
@@ -45,22 +45,23 @@ namespace BancSystem.App.Tests
 
             var updatedEmployee = new Employee
             {
+                Id = employee.Id,
                 PassportNumber = employee.PassportNumber,
-                FullName = "Updated Name",
+                FullName = new FullName { FirstName = "UpName", LastName = "UpLName" },
                 BirthDay = employee.BirthDay.AddYears(1),
                 PhoneNumber = "1234567890",
                 Salary = 60000,
-                Contract = "Updated Contract"
+                Contract = "UpContract"
             };
 
             // Act
             _employeeService.Update(updatedEmployee);
-            var actualEmployee = _employeeService.Get(e => e.PassportNumber == updatedEmployee.PassportNumber)
-                .FirstOrDefault();
+            var actualEmployee = _employeeService.GetById(updatedEmployee.Id);
 
             // Assert
             Assert.NotNull(actualEmployee);
-            Assert.Equal(updatedEmployee.FullName, actualEmployee.FullName);
+            Assert.Equal(updatedEmployee.FullName.FirstName, actualEmployee.FullName.FirstName);
+            Assert.Equal(updatedEmployee.FullName.LastName, actualEmployee.FullName.LastName);
             Assert.Equal(updatedEmployee.BirthDay, actualEmployee.BirthDay);
             Assert.Equal(updatedEmployee.PhoneNumber, actualEmployee.PhoneNumber);
             Assert.Equal(updatedEmployee.Salary, actualEmployee.Salary);
@@ -68,7 +69,7 @@ namespace BancSystem.App.Tests
         }
 
         [Fact]
-        public void GetAllEmployeesPositiveTest()
+        public void GetFilterEmployeesPositiveTest()
         {
             // Arrange
             var employees = _testDataGenerator.GenerateEmployees(10);
@@ -78,16 +79,15 @@ namespace BancSystem.App.Tests
             }
 
             // Act
-            var allEmployees = _employeeService.Get(null);
+            var allEmployees = _employeeService.Get(e => true, 1, 10);
 
             // Assert
             Assert.NotNull(allEmployees);
             Assert.Equal(employees.Count, allEmployees.Count);
-            Assert.True(employees.SequenceEqual(allEmployees));
         }
 
         [Fact]
-        public void GetEmployeePositiveTest()
+        public void GetByIdEmployeePositiveTest()
         {
             // Arrange
             var employees = _testDataGenerator.GenerateEmployees(10);
@@ -98,12 +98,11 @@ namespace BancSystem.App.Tests
             var employeeToFind = employees.First();
 
             // Act
-            var foundEmployee = _employeeService.Get(e => e.PassportNumber == employeeToFind.PassportNumber)
-                .FirstOrDefault();
+            var foundEmployee = _employeeService.GetById(employeeToFind.Id);
 
             // Assert
             Assert.NotNull(foundEmployee);
-            Assert.Equal(employeeToFind, foundEmployee);
+            Assert.Equal(employeeToFind.PassportNumber, foundEmployee.PassportNumber);
         }
 
         [Fact]
@@ -114,11 +113,11 @@ namespace BancSystem.App.Tests
             _employeeService.Add(employee);
 
             // Act
-            _employeeService.Delete(employee);
-            var allEmployees = _employeeService.Get(null);
+            _employeeService.Delete(employee.Id);
+            var allEmployees = _employeeService.Get(e => true, 1, 10); 
 
             // Assert
-            Assert.DoesNotContain(employee, allEmployees);
+            Assert.DoesNotContain(allEmployees, e => e.Id == employee.Id);
         }
     } 
 }

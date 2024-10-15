@@ -53,7 +53,6 @@ namespace BankSystem.Data.Storages
             if (exAccount == null)
                 throw new Exception($"{nameof(Account)} not found.");
 
-            exAccount.CurrencyName = account.CurrencyName;
             exAccount.Amount = account.Amount;
 
             _dbContext.SaveChanges();

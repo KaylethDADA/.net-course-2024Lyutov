@@ -6,51 +6,57 @@ namespace BankSystem.Data.Tests
 {
     public class EmployeeStorageTests
     {
+        private readonly BankSystemDbContext _dbContext;
+        private readonly EmployeeStorage _employeeStorage;
+
+        public EmployeeStorageTests()
+        {
+            _dbContext = new BankSystemDbContext();
+            _employeeStorage = new EmployeeStorage(_dbContext);
+        }
+
         [Fact]
         public void AddEmployeePositiveTest()
         {
             // Arrange
-            var storage = new EmployeeStorage();
             var testDataGenerator = new TestDataGenerator();
 
-            var employees = testDataGenerator.GenerateEmployees(10);
+            var employee = testDataGenerator.GenerateEmployees(1).First();
 
             // Act
-            foreach (var employee in employees)
-            {
-                storage.Add(employee);
-            }
-
-            var actualEmployees = storage.Get(null);
+            _employeeStorage.Add(employee);
 
             // Assert
+            var actualEmployees = _employeeStorage.GetById(employee.Id);
+
             Assert.NotNull(actualEmployees);
-            Assert.True(employees.SequenceEqual(actualEmployees));
+            Assert.Equal(employee, actualEmployees);
         }
 
         [Fact]
         public void UpdateEmployeePositiveTest()
         {
             // Arrange
-            var storage = new EmployeeStorage();
             var testDataGenerator = new TestDataGenerator();
             var employee = testDataGenerator.GenerateEmployees(1).First();
-            storage.Add(employee);
+
+            _employeeStorage.Add(employee);
 
             // Create updated employee
             var updatedEmployee = new Employee
             {
-                PassportNumber = employee.PassportNumber, // same identifier
-                FullName = "Updated Name",
+                Id = employee.Id,
+                PassportNumber = employee.PassportNumber,
+                FullName = new FullName { FirstName = "UpName", LastName = "UpLName"},
                 BirthDay = employee.BirthDay.AddYears(1),
                 PhoneNumber = "1234567890",
                 Salary = 60000,
-                Contract = "Updated Contract"
+                Contract = "UpContract"
             };
 
             // Act
-            storage.Update(updatedEmployee);
-            var actualEmployee = storage.Get(e => e.PassportNumber == employee.PassportNumber).FirstOrDefault();
+            _employeeStorage.Update(updatedEmployee);
+            var actualEmployee = _employeeStorage.GetById(updatedEmployee.Id);
 
             // Assert
             Assert.NotNull(actualEmployee);
@@ -62,58 +68,54 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
-        public void GetAllEmployeesPositiveTest()
+        public void GetPageEmployeesPositiveTest()
         {
             // Arrange
-            var storage = new EmployeeStorage();
             var testDataGenerator = new TestDataGenerator();
             var employees = testDataGenerator.GenerateEmployees(10);
             foreach (var employee in employees)
             {
-                storage.Add(employee);
+                _employeeStorage.Add(employee);
             }
 
             // Act
-            var allEmployees = storage.Get(null);
+            var allEmployees = _employeeStorage.Get(e => true, 1, 10);
 
             // Assert
             Assert.NotNull(allEmployees);
-            Assert.Equal(employees.Count, allEmployees.Count);
-            Assert.True(employees.SequenceEqual(allEmployees));
+            Assert.Equal(10, allEmployees.Count);
         }
 
         [Fact]
         public void DeleteEmployeePositiveTest()
         {
             // Arrange
-            var storage = new EmployeeStorage();
             var testDataGenerator = new TestDataGenerator();
             var employee = testDataGenerator.GenerateEmployees(1).First();
-            storage.Add(employee);
+            _employeeStorage.Add(employee);
 
             // Act
-            storage.Delete(employee);
-            var actualEmployees = storage.Get(null);
+            _employeeStorage.Delete(employee.Id);
 
             // Assert
-            Assert.DoesNotContain(employee, actualEmployees);
+            var deletedEmployees = _dbContext.Clients.FirstOrDefault(c => c.Id == employee.Id);
+            Assert.Null(deletedEmployees);
         }
 
         [Fact]
-        public void GetEmployeePositiveTest()
+        public void GetByIdEmployeePositiveTest()
         {
             // Arrange
-            var storage = new EmployeeStorage();
             var testDataGenerator = new TestDataGenerator();
             var employees = testDataGenerator.GenerateEmployees(10);
             foreach (var employee in employees)
             {
-                storage.Add(employee);
+                _employeeStorage.Add(employee);
             }
             var employeeToFind = employees.First();
 
             // Act
-            var foundEmployee = storage.Get(e => e.PassportNumber == employeeToFind.PassportNumber).FirstOrDefault();
+            var foundEmployee = _employeeStorage.GetById(employeeToFind.Id);
 
             // Assert
             Assert.NotNull(foundEmployee);

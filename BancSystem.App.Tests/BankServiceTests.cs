@@ -16,7 +16,7 @@ namespace BancSystem.App.Tests
         public void AddBonusPositiveTest()
         {
             // Arrange
-            var client = new Client { FullName = "John Doe" };
+            var client = new Client { FullName = new FullName { FirstName ="da", LastName = "afdad" } };
             decimal bonusAmount = 100.50m;
 
             // Act
@@ -31,7 +31,7 @@ namespace BancSystem.App.Tests
         public void AddToBlackListPositiveTest()
         {
             // Arrange
-            var client = new Client { FullName = "Alice Smith" };
+            var client = new Client { FullName = new FullName { FirstName = "da", LastName = "afdad" } };
 
             // Act
             _bankService.AddToBlackList(client);
@@ -45,7 +45,7 @@ namespace BancSystem.App.Tests
         public void IsPersonInBlackListPositiveTest()
         {
             // Arrange
-            var client = new Client { FullName = "Bob Brown" };
+            var client = new Client { FullName = new FullName { FirstName = "da", LastName = "afdad" } };
 
             // Act
             bool isInBlackList = _bankService.IsPersonInBlackList(client);
@@ -75,7 +75,7 @@ namespace BancSystem.App.Tests
             // Arrange
             var client = new Client
             {
-                FullName = "Charlie Johnson",
+                FullName = new FullName { FirstName = "da", LastName = "afdad" },
                 PhoneNumber = "123-456-7890",
                 BirthDay = new DateTime(1990, 1, 1)
             };

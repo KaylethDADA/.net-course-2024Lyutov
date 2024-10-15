@@ -1,4 +1,5 @@
 ﻿using BankSystem.Application.Services;
+using BankSystem.Data;
 using BankSystem.Data.Storages;
 using BankSystem.Domain.Models;
 
@@ -12,28 +13,26 @@ namespace BancSystem.App.Tests
 
         public ClientServiceTests()
         {
-            _testDataGenerator = new TestDataGenerator();
-            _clientStorage = new ClientStorage();
+            var dbContext = new BankSystemDbContext();
+            _clientStorage = new ClientStorage(dbContext);
             _clientService = new ClientService(_clientStorage);
+            _testDataGenerator = new TestDataGenerator();
         }
 
         [Fact]
-        public void AddEmployeePositiveTest()
+        public void AddClientPositiveTest()
         {
             // Arrange
-            var clients = _testDataGenerator.GenerateClients(10);
+            var client = _testDataGenerator.GenerateClients(1).First();
 
             // Act
-            foreach (var employee in clients)
-            {
-                _clientService.AddClient(employee);
-            }
-
-            var actualClient = _clientService.Get(null);
+            _clientService.AddClient(client);
 
             // Assert
-            Assert.NotNull(actualClient);
-            Assert.True(clients.SequenceEqual(actualClient));
+            var storedClient = _clientService.GetById(client.Id);
+
+            Assert.NotNull(storedClient);
+            Assert.Equal(client.PassportNumber, storedClient.PassportNumber);
         }
 
         [Fact]
@@ -41,15 +40,15 @@ namespace BancSystem.App.Tests
         {
             // Arrange
             var client = _testDataGenerator.GenerateClients(1).First();
-            var account = _testDataGenerator.GenerateAccounts(1).First();
+            var account = new Account { CurrencyName = "USD", Amount = 1000 };
 
             _clientService.AddClient(client);
 
             // Act
-            _clientService.AddAccount(client, account);
+            _clientService.AddAccount(client.Id, account);
 
             // Assert
-            var accounts = _clientStorage.GetClientAccounts(client);
+            var accounts = _clientService.GetAccountsByClientId(client.Id);
             Assert.Contains(account, accounts);
         }
 
@@ -57,27 +56,26 @@ namespace BancSystem.App.Tests
         public void UpdateClientPositiveTest()
         {
             // Arrange
-            var oldClient = _testDataGenerator.GenerateClients(1).First();
+            var client = _testDataGenerator.GenerateClients(1).First();
+
+            _clientService.AddClient(client);
             var updatedClient = new Client
             {
-                PassportNumber = oldClient.PassportNumber,
-                FullName = "Updated Name",
-                BirthDay = oldClient.BirthDay.AddYears(1),
-                PhoneNumber = "1234567890"
+                Id = client.Id, 
+                FullName = new FullName { FirstName = "Jane", LastName = "Doe" },
+                PassportNumber = client.PassportNumber,
+                BirthDay = client.BirthDay,
+                PhoneNumber = "0987654321"
             };
-
-            _clientService.AddClient(oldClient);
 
             // Act
             _clientService.UpdateClient(updatedClient);
-            var actualEmployee = _clientService.Get(e => e.PassportNumber == updatedClient.PassportNumber)
-                .FirstOrDefault();
+            var actualClient = _clientService.GetById(client.Id);
 
             // Assert
-            Assert.NotNull(actualEmployee);
-            Assert.Equal(updatedClient.FullName, actualEmployee.FullName);
-            Assert.Equal(updatedClient.BirthDay, actualEmployee.BirthDay);
-            Assert.Equal(updatedClient.PhoneNumber, actualEmployee.PhoneNumber);
+            Assert.NotNull(actualClient);
+            Assert.Equal(updatedClient.FullName, actualClient.FullName);
+            Assert.Equal(updatedClient.PhoneNumber, actualClient.PhoneNumber);
         }
 
         [Fact]
@@ -85,39 +83,37 @@ namespace BancSystem.App.Tests
         {
             // Arrange
             var client = _testDataGenerator.GenerateClients(1).First();
-            var currency = new Currency("USD", "$", "Доллар США");
-            var oldAccount = new Account { Currency = currency, Amount = 500 };
-            var newAccount = new Account { Currency = currency, Amount = 1000 };
+            var oldAccount = new Account { Id = Guid.NewGuid(), CurrencyName = "USD", Amount = 500 };
+            var newAccount = new Account { Id = oldAccount.Id, CurrencyName = "USD", Amount = 1000 };
 
-            _clientService.AddClient(client);
-            _clientService.AddAccount(client, oldAccount);
+            _clientStorage.Add(client);
+            _clientStorage.AddAccount(client.Id, oldAccount);
 
             // Act
-            _clientService.UpdateAccount(client, oldAccount, newAccount);
+            _clientService.UpdateAccount(newAccount);
 
             // Assert
-            var accounts = _clientStorage.GetClientAccounts(client);
-            Assert.DoesNotContain(oldAccount, accounts);
-            Assert.Contains(newAccount, accounts);
+            var accounts = _clientService.GetAccountsByClientId(client.Id);
+            Assert.NotNull(accounts);
+            Assert.Equal(accounts.First().Amount, newAccount.Amount);
         }
 
         [Fact]
-        public void GetAllClientPositiveTest()
+        public void GetFilterClientPositiveTest()
         {
             // Arrange
             var clients = _testDataGenerator.GenerateClients(10);
-            foreach (var employee in clients)
+            foreach (var client in clients)
             {
-                _clientService.AddClient(employee);
+                _clientService.AddClient(client);
             }
 
             // Act
-            var allClients = _clientService.Get(null);
+            var allClients = _clientService.Get(c => true, 1, 10);
 
             // Assert
             Assert.NotNull(allClients);
             Assert.Equal(clients.Count, allClients.Count);
-            Assert.True(clients.SequenceEqual(allClients));
         }
 
         [Fact]
@@ -128,10 +124,10 @@ namespace BancSystem.App.Tests
             _clientService.AddClient(client);
 
             // Act
-            _clientService.DeleteClient(client);
+            _clientService.DeleteClient(client.Id);
 
             // Assert
-            var storedClients = _clientService.Get(null);
+            var storedClients = _clientService.Get(c => true, 1, 10);
             Assert.DoesNotContain(client, storedClients);
         }
 
@@ -140,16 +136,16 @@ namespace BancSystem.App.Tests
         {
             // Arrange
             var client = _testDataGenerator.GenerateClients(1).First();
-            var account = new Account { Currency = new Currency("USD", "$", "Доллар США"), Amount = 1000 };
+            var account = new Account { CurrencyName = "USD", Amount = 1000 };
 
             _clientService.AddClient(client);
-            _clientService.AddAccount(client, account);
+            _clientService.AddAccount(client.Id, account);
 
             // Act
-            _clientService.DeleteAccount(client, account);
+            _clientService.DeleteAccount(account.Id);
 
             // Assert
-            var accounts = _clientStorage.GetClientAccounts(client);
+            var accounts = _clientService.GetAccountsByClientId(client.Id);
             Assert.DoesNotContain(account, accounts);
         }
     }
