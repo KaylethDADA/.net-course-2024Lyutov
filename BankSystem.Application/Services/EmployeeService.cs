@@ -1,14 +1,15 @@
 ﻿using BankSystem.Application.Exceptions;
 using BankSystem.Application.Interfaces;
 using BankSystem.Domain.Models;
+using System.Linq.Expressions;
 
 namespace BankSystem.Application.Services
 {
-    public class EmployeeService
+    public class EmployeeService 
     {
-        private readonly IEmployeeStorage _employeeStorage;
+        private readonly IStorage<Employee> _employeeStorage;
 
-        public EmployeeService(IEmployeeStorage employeeStorage)
+        public EmployeeService(IStorage<Employee> employeeStorage)
         {
             _employeeStorage = employeeStorage;
         }
@@ -16,9 +17,9 @@ namespace BankSystem.Application.Services
         public void Add(Employee employee)
         {
             if (employee == null)
-                throw new EmployeeValidationException($"The old or new {nameof(Employee)} cannot be zero.");
+                throw new EmployeeValidationException($"The {nameof(Employee)} cannot be null.");
 
-            if (employee.Age < 18)
+            if (employee.BirthDay > DateTime.Now.AddYears(-18))
                 throw new EmployeeValidationException($"{nameof(Employee)} must be over 18 years old.");
 
             if (string.IsNullOrWhiteSpace(employee.PassportNumber))
@@ -37,9 +38,9 @@ namespace BankSystem.Application.Services
         public void Update(Employee employee)
         {
             if (employee == null)
-                throw new EmployeeValidationException($"The old or new {nameof(Employee)} cannot be zero.");
+                throw new EmployeeValidationException($"The {nameof(Employee)} cannot be null.");
 
-            if (employee.Age < 18)
+            if (employee.BirthDay > DateTime.Now.AddYears(-18))
                 throw new EmployeeValidationException($"{nameof(Employee)} must be over 18 years old.");
 
             if (string.IsNullOrWhiteSpace(employee.PassportNumber))
@@ -51,20 +52,45 @@ namespace BankSystem.Application.Services
             }
             catch (Exception ex)
             {
-                throw new EmployeeException($"An error occurred while editing the {nameof(Employee)}.", ex);
+                throw new EmployeeException($"An error occurred while updating the {nameof(Employee)}.", ex);
             }
         }
 
-        public List<Employee> Get(Func<Employee, bool>? filter)
+        public ICollection<Employee> Get(Expression<Func<Employee, bool>> filter, int pageNumber, int pageSize)
         {
-            return _employeeStorage.Get(filter);
+            if (pageNumber <= 0)
+                throw new EmployeeException("Page number must be greater than zero.");
+
+            if (pageSize <= 0)
+                throw new EmployeeException("Page size must be greater than zero.");
+
+            try
+            {
+                return _employeeStorage.Get(filter, pageNumber, pageSize);
+            }
+            catch (Exception ex)
+            {
+                throw new EmployeeException($"An error occurred while retrieving {nameof(Employee)}.", ex);
+            }
         }
 
-        public void Delete(Employee employee)
+        public Employee GetById(Guid id)
         {
             try
             {
-                _employeeStorage.Delete(employee);
+                return _employeeStorage.GetById(id);
+            }
+            catch(Exception ex)
+            {
+                throw new EmployeeException($"An error occurred while retrieving {nameof(Employee)}.", ex);
+            }
+        }
+
+        public void Delete(Guid id)
+        {
+            try
+            {
+                _employeeStorage.Delete(id);
             }
             catch (Exception ex)
             {

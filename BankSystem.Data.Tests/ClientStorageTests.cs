@@ -6,157 +6,129 @@ namespace BankSystem.Data.Tests
 {
     public class ClientStorageTests
     {
+        private readonly BankSystemDbContext _dbContext;
+        private readonly ClientStorage _clientStorage;
+        private readonly TestDataGenerator _testDataGenerator;
+
+        public ClientStorageTests()
+        {
+            _dbContext = new BankSystemDbContext();
+            _clientStorage = new ClientStorage(_dbContext);
+            _testDataGenerator = new TestDataGenerator();
+        }
+
         [Fact]
         public void AddClientPositiveTest()
         {
             // Arrange
-            var storage = new ClientStorage();
-            var testDataGenerator = new TestDataGenerator();
-
-            var client = testDataGenerator.GenerateClients(1).First();
+            var client = _testDataGenerator.GenerateClients(1).First();
 
             // Act
-            storage.Add(client);
+            _clientStorage.Add(client);
 
             // Assert
-            var actualClient = storage.Get(c => c.PassportNumber == client.PassportNumber).FirstOrDefault();
+            var actualClient = _clientStorage.GetById(client.Id);
 
             Assert.NotNull(actualClient);
             Assert.Equal(client, actualClient);
         }
 
         [Fact]
+        public void AddAccountPositiveTest()
+        {
+            // Arrange
+            var client = _testDataGenerator.GenerateClients(1).First();
+            _clientStorage.Add(client);
+
+            var account = _testDataGenerator.GenerateAccounts(1, _testDataGenerator.GenerateCurrencies(1)).First();
+
+            // Act
+            _clientStorage.AddAccount(client.Id, account);
+
+            // Assert
+            var clientAccounts = _clientStorage.GetAccountsByClientId(client.Id);
+
+            Assert.NotNull(clientAccounts);
+            Assert.Contains(clientAccounts, a => a.Id == account.Id);
+        }
+
+        [Fact]
         public void UpdateClientPositiveTest()
         {
             // Arrange
-            var storage = new ClientStorage();
-            var testDataGenerator = new TestDataGenerator();
+            var client = _testDataGenerator.GenerateClients(1).First();
+            _clientStorage.Add(client);
 
-            var oldClient = testDataGenerator.GenerateClients(1).First();
-            storage.Add(oldClient);
-
-            oldClient.FullName = "dadadawf";
-            oldClient.PhoneNumber = "88800553535";
-
-            var newClient = oldClient;
+            var upClient = new Client
+            {
+                Id = client.Id,
+                PassportNumber = client.PassportNumber,
+                FullName = new FullName { FirstName = "UpName", LastName = "UpLName" },
+                BirthDay = client.BirthDay.AddYears(1),
+                PhoneNumber = "1234567890",
+            };
 
             // Act
-            storage.Update(newClient);
+            _clientStorage.Update(upClient);
 
             // Assert
-            var actualClient = storage.Get(c => c.PassportNumber == newClient.PassportNumber).FirstOrDefault();
-
+            var actualClient = _clientStorage.GetById(upClient.Id);
             Assert.NotNull(actualClient);
-            Assert.Equal(newClient.FullName, actualClient?.FullName);
+            Assert.Equal(upClient.FullName, client.FullName);
+            Assert.Equal(upClient.BirthDay, client.BirthDay);
+            Assert.Equal(upClient.PhoneNumber, client.PhoneNumber);
         }
-
 
         [Fact]
         public void UpdateAccountPositiveTest()
         {
             // Arrange
-            var storage = new ClientStorage();
-            var testDataGenerator = new TestDataGenerator();
+            var client = _testDataGenerator.GenerateClients(1).First();
+            _clientStorage.Add(client);
 
-            var client = testDataGenerator.GenerateClients(1).First();
-            storage.Add(client);
+            var oldAccount = _testDataGenerator.GenerateAccounts(1, _testDataGenerator.GenerateCurrencies(1)).First();
+            _clientStorage.AddAccount(client.Id, oldAccount);
 
-            var oldAccount = testDataGenerator.GenerateAccounts(1).First();
-            storage.AddAccount(client, oldAccount);
-
-            var newAccount = testDataGenerator.GenerateAccounts(1).First();
+            oldAccount.Amount = 2000;
 
             // Act
-            storage.UpdateAccount(client, oldAccount, newAccount);
-            var clientAccounts = storage.Get(c => c.PassportNumber == client.PassportNumber).FirstOrDefault();
+            _clientStorage.UpdateAccount(oldAccount);
 
             // Assert
-            Assert.NotNull(clientAccounts);
-            Assert.DoesNotContain(oldAccount, storage.GetClientAccounts(client));
-            Assert.Contains(newAccount, storage.GetClientAccounts(client));
+            var updatedAccount = _clientStorage.GetAccountsByClientId(client.Id)
+                .FirstOrDefault(a => a.Id == oldAccount.Id);
+
+            Assert.NotNull(updatedAccount);
+            Assert.Equal(2000, updatedAccount.Amount);
         }
 
         [Fact]
-        public void AddAccountPositiveTest()
+        public void GetByIdClientPositiveTest()
         {
             // Arrange
-            var storage = new ClientStorage();
-            var testDataGenerator = new TestDataGenerator();
-
-            var client = testDataGenerator.GenerateClients(1).First();
-            storage.Add(client);
-
-            var newAccount = testDataGenerator.GenerateAccounts(1).First();
+            var client = _testDataGenerator.GenerateClients(1).First();
+            _clientStorage.Add(client);
 
             // Act
-            storage.AddAccount(client, newAccount);
+            var actualClient = _clientStorage.GetById(client.Id);
 
             // Assert
-            var clientAccounts = storage.GetClientAccounts(client);
-
-            Assert.NotNull(clientAccounts);
-            Assert.Contains(newAccount, clientAccounts);
+            Assert.NotNull(actualClient);
+            Assert.Equal(client, actualClient);
         }
 
         [Fact]
-        public void GetAllPositiveTest()
+        public void GetFilterClientsPositiveTest()
         {
             // Arrange
-            var storage = new ClientStorage();
-            var testDataGenerator = new TestDataGenerator();
+            var client1 = _testDataGenerator.GenerateClients(1).First();
+            var client2 = _testDataGenerator.GenerateClients(1).First();
 
-            var expectedClient = testDataGenerator.GenerateClients(1).First();
-            storage.Add(expectedClient);
-
-            // Act
-            var actualClients = storage.Get(null);
-
-            // Assert
-            Assert.NotNull(actualClients);
-            Assert.Contains(expectedClient, actualClients);
-        }
-
-        [Fact]
-        public void GetClientAccountsPositiveTest()
-        {
-            // Arrange
-            var storage = new ClientStorage();
-            var testDataGenerator = new TestDataGenerator();
-
-            var client = testDataGenerator.GenerateClients(1).First();
-            storage.Add(client);
-
-            var accounts = testDataGenerator.GenerateAccounts(10);
-
-            foreach (var account in accounts)
-            {
-                storage.AddAccount(client, account);
-            }
+            _clientStorage.Add(client1);
+            _clientStorage.Add(client2);
 
             // Act
-            var clientAccounts = storage.GetClientAccounts(client);
-
-            // Assert
-            Assert.NotNull(clientAccounts);
-            Assert.Equal(accounts.Count, clientAccounts.Count);
-            Assert.True(accounts.SequenceEqual(clientAccounts));
-        }
-
-        [Fact]
-        public void FilterClientsPositiveTest()
-        {
-            // Arrange
-            var storage = new ClientStorage();
-            var testDataGenerator = new TestDataGenerator();
-
-            var client1 = new Client { FullName = "John Doe", PhoneNumber = "1234567890", BirthDay = new DateTime(1990, 1, 1), PassportNumber = "123" };
-            var client2 = new Client { FullName = "Jane Doe", PhoneNumber = "0987654321", BirthDay = new DateTime(1995, 1, 1), PassportNumber = "456" };
-
-            storage.Add(client1);
-            storage.Add(client2);
-
-            // Act
-            var result = storage.Get(c => c.FullName.Contains("John"));
+            var result = _clientStorage.Get(c => c.FullName.FirstName.Contains(client1.FullName.FirstName), 1, 10);
 
             // Assert
             Assert.Single(result);
@@ -164,44 +136,75 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
+        public void GetAccountsByClientIdPositiveTest()
+        {
+            // Arrange
+            var client = _testDataGenerator.GenerateClients(1).First();
+
+            _clientStorage.Add(client);
+
+            var accounts = _testDataGenerator.GenerateAccounts(1, _testDataGenerator.GenerateCurrencies(5));
+
+            foreach (var account in accounts)
+            {
+                _clientStorage.AddAccount(client.Id, account);
+            }
+
+            // Act
+            var result = _clientStorage.GetAccountsByClientId(client.Id);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(accounts.Count, result.Count);
+        }
+
+        [Fact]
+        public void GetByPassportNumberPositiveTest()
+        {
+            // Arrange
+            var client = _testDataGenerator.GenerateClients(1).First();
+
+            _clientStorage.Add(client);
+
+            // Act
+            var result = _clientStorage.GetByPassportNumber(client.PassportNumber);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(result, client);
+        }
+
+        [Fact]
         public void DeleteClientPositiveTest()
         {
             // Arrange
-            var storage = new ClientStorage();
-            var testDataGenerator = new TestDataGenerator();
-
-            var client = testDataGenerator.GenerateClients(1).First();
-            storage.Add(client);
+            var client = _testDataGenerator.GenerateClients(1).First();
+            _clientStorage.Add(client);
 
             // Act
-            storage.Delete(client);
+            _clientStorage.Delete(client.Id);
 
             // Assert
-            var actualClient = storage.Get(c => c.PassportNumber == client.PassportNumber);
-            Assert.Empty(actualClient);
+            var deletedClient = _dbContext.Clients.FirstOrDefault(c => c.Id == client.Id);
+            Assert.Null(deletedClient);
         }
 
         [Fact]
         public void DeleteAccountPositiveTest()
         {
             // Arrange
-            var storage = new ClientStorage();
-            var testDataGenerator = new TestDataGenerator();
+            var client = _testDataGenerator.GenerateClients(1).First();
+            _clientStorage.Add(client);
 
-            var client = testDataGenerator.GenerateClients(1).First();
-            storage.Add(client);
-
-            var account = testDataGenerator.GenerateAccounts(1).First();
-            storage.AddAccount(client, account);
+            var account = _testDataGenerator.GenerateAccounts(1, _testDataGenerator.GenerateCurrencies(1)).First();
+            _clientStorage.AddAccount(client.Id, account);
 
             // Act
-            storage.DeleteAccount(client, account);
+            _clientStorage.DeleteAccount(account.Id);
 
             // Assert
-            var clientAccounts = storage.Get(c => c.PassportNumber == client.PassportNumber)
-                                        .SelectMany(c => storage.GetClientAccounts(c));
-
-            Assert.DoesNotContain(account, clientAccounts);
+            var deletedAccount = _dbContext.Accounts.FirstOrDefault(a => a.Id == account.Id);
+            Assert.Null(deletedAccount);
         }
     }
 }

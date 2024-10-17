@@ -1,90 +1,92 @@
 ﻿using BankSystem.Application.Interfaces;
 using BankSystem.Domain.Models;
+using System.Linq.Expressions;
 
 namespace BankSystem.Data.Storages
 {
     public class ClientStorage : IClientStorage
     {
-        private Dictionary<Client, List<Account>> _clientAccounts;
+        private readonly BankSystemDbContext _dbContext;
 
-        public ClientStorage()
+        public ClientStorage(BankSystemDbContext dbContext)
         {
-            _clientAccounts = new Dictionary<Client, List<Account>>();
+            _dbContext = dbContext;
         }
 
         public void Add(Client item)
         {
-            if(_clientAccounts.Keys.Any(x => x.PassportNumber == item.PassportNumber))
-                throw new Exception($"A {nameof(Client)} with the same passport number already exists.");
-
-            _clientAccounts[item] = new List<Account>();
+            _dbContext.Clients.Add(item);            
+            _dbContext.SaveChanges();
         }
 
-        public void AddAccount(Client client, Account account)
+        public void AddAccount(Guid clientId, Account account)
         {
-            if (!_clientAccounts.ContainsKey(client))
-                throw new Exception($"{nameof(Client)} not found.");
-
-            _clientAccounts[client].Add(account);
+            account.ClientId = clientId;
+            
+            _dbContext.Accounts.Add(account);
+            _dbContext.SaveChanges();
         }
 
         public void Update(Client item)
         {
-            var client = _clientAccounts.Keys.Where(x => x.Equals(item)).First();
-
-            if (client == null)
-                throw new Exception($"{nameof(Client)} not found.");
+            var client = _dbContext.Clients.FirstOrDefault(x => x.Id == item.Id);
 
             client.FullName = item.FullName;
             client.PhoneNumber = item.PhoneNumber;
             client.BirthDay = item.BirthDay;
+
+            _dbContext.SaveChanges();
         }
 
-        public void UpdateAccount(Client client, Account oldAccount, Account newAccount)
+        public void UpdateAccount(Account account)
         {
-            if (!_clientAccounts.TryGetValue(client, out var accounts))
-                throw new Exception($"{nameof(Client)} not found.");
+            var exAccount = _dbContext.Accounts.FirstOrDefault(x => x.Id == account.Id);
 
-            var index = accounts.IndexOf(oldAccount);
+            exAccount.Amount = account.Amount;
 
-            if (index == -1)
+            _dbContext.SaveChanges();
+        }
+
+        public ICollection<Client> Get(Expression<Func<Client, bool>> filter, int pageNumber, int pageSize)
+        {
+            var clients = _dbContext.Clients.Where(filter).Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return clients;
+        }
+
+        public Client? GetById(Guid id)
+        {
+            return _dbContext.Clients.FirstOrDefault(x => x.Id == id);
+        }
+
+        public ICollection<Account> GetAccountsByClientId(Guid clientId)
+        {
+            return _dbContext.Accounts.Where(x => x.ClientId == clientId).ToList();
+        }
+
+        public Client? GetByPassportNumber(string passportNumber)
+        {
+            return _dbContext.Clients.FirstOrDefault(c => c.PassportNumber == passportNumber);
+        }
+
+        public void Delete(Guid id)
+        {
+            var client = _dbContext.Clients.FirstOrDefault(x => x.Id == id);
+
+            _dbContext.Clients.Remove(client);
+            _dbContext.SaveChanges();
+        }
+
+        public void DeleteAccount(Guid accountId)
+        {
+            var account = _dbContext.Accounts.FirstOrDefault(x => x.Id == accountId);
+            if (account == null)
                 throw new Exception($"{nameof(Account)} not found.");
 
-            accounts[index] = newAccount;
-        }
-
-        public Dictionary<Client, List<Account>> Get(Func<Client, bool>? filter)
-        {
-            var clients = _clientAccounts.AsEnumerable();
-
-            if (filter != null)
-                clients = clients.Where(x => filter(x.Key));
-
-            return clients.ToDictionary(x => x.Key, x => x.Value);
-        }
-
-        public void Delete(Client item)
-        {
-            if (!_clientAccounts.ContainsKey(item))
-                throw new Exception($"{nameof(Client)} not found.");
-
-            _clientAccounts.Remove(item);
-        }
-
-        public void DeleteAccount(Client client, Account account)
-        {
-            if (!_clientAccounts.TryGetValue(client, out var accounts))
-                throw new Exception($"{nameof(Client)} not found.");
-
-            accounts.Remove(account);
-        }
-
-        public List<Account> GetClientAccounts(Client client)
-        {   
-            if (!_clientAccounts.TryGetValue(client, out var accounts))
-                throw new Exception($"{nameof(Client)} not found.");
-
-            return accounts;
+            _dbContext.Accounts.Remove(account);
+            _dbContext.SaveChanges();
         }
     }
 }

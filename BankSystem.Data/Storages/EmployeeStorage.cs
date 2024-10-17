@@ -1,29 +1,32 @@
 ﻿using BankSystem.Application.Interfaces;
 using BankSystem.Domain.Models;
+using System.Linq.Expressions;
 
 namespace BankSystem.Data.Storages
 {
-    public class EmployeeStorage : IEmployeeStorage
+    public class EmployeeStorage : IStorage<Employee>
     {
-        private List<Employee> _employees;
+        private readonly BankSystemDbContext _dbContext;
 
-        public EmployeeStorage()
+        public EmployeeStorage(BankSystemDbContext dbContext)
         {
-            _employees = new List<Employee>();
+            _dbContext = dbContext;
         }
 
         public void Add(Employee item)
         {
-            if (_employees.Any(x => x.PassportNumber == item.PassportNumber))
+            var employy = _dbContext.Employees.FirstOrDefault(x => x.PassportNumber == item.PassportNumber);
+            if (employy != null)
                 throw new Exception($"A {nameof(Employee)} with the same passport number already exists.");
 
-            _employees.Add(item);
+            _dbContext.Employees.Add(item);
+            _dbContext.SaveChanges();
         }
 
         public void Update(Employee item)
         {
-            var existingEmployee = _employees.FirstOrDefault(x => x.Equals(item));
-            
+            var existingEmployee = _dbContext.Employees.Find(item.Id);
+
             if (existingEmployee == null)
                 throw new Exception($"{nameof(Employee)} not found.");
 
@@ -32,24 +35,32 @@ namespace BankSystem.Data.Storages
             existingEmployee.PhoneNumber = item.PhoneNumber;
             existingEmployee.Salary = item.Salary;
             existingEmployee.Contract = item.Contract;
+
+            _dbContext.SaveChanges();
         }
 
-        public List<Employee> Get(Func<Employee, bool>? filter)
+        public ICollection<Employee> Get(Expression<Func<Employee, bool>> filter, int pageNumber, int pageSize)
         {
-            var employees = _employees.AsEnumerable();
+            var employees = _dbContext.Employees.Where(filter).Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
 
-            if (filter != null)
-                employees = employees.Where(filter);
-
-            return employees.ToList();
+            return employees;
         }
 
-        public void Delete(Employee item)
+        public Employee? GetById(Guid id)
         {
-            if (!_employees.Contains(item))
+            return _dbContext.Employees.FirstOrDefault(x => x.Id == id); 
+        }
+
+        public void Delete(Guid id)
+        {
+            var employee = _dbContext.Employees.FirstOrDefault(x => x.Id == id);
+            if (employee == null)
                 throw new Exception($"{nameof(Employee)} not found.");
 
-            _employees.Remove(item);
+            _dbContext.Employees.Remove(employee);
+            _dbContext.SaveChanges();
         }
     }
 }

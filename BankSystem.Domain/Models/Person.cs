@@ -2,7 +2,8 @@
 {
     public class Person
     {
-        public string FullName { get; set; }
+        public Guid Id { get; set; }
+        public FullName FullName { get; set; }
 
         public DateTime BirthDay { get; set; }
 

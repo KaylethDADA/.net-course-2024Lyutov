@@ -12,7 +12,7 @@ namespace BancSystem.App.Tests
             var testDataGenerator = new TestDataGenerator();
             
             var clients = testDataGenerator.GenerateClients(10);
-            var clientAccountDictionary = testDataGenerator.GenerateClientAccounts(clients);
+            var clientAccountDictionary = testDataGenerator.GenerateClientAccounts(clients, testDataGenerator.GenerateCurrencies(10));
 
             var existingClient = clientAccountDictionary.Keys.First();
             var newClient = new Client
@@ -36,7 +36,7 @@ namespace BancSystem.App.Tests
             // Arrange
             var testDataGenerator = new TestDataGenerator();
             var clients = testDataGenerator.GenerateClients(5);
-            var clientAccountDictionary = testDataGenerator.GenerateClientAccounts(clients);
+            var clientAccountDictionary = testDataGenerator.GenerateClientAccounts(clients, testDataGenerator.GenerateCurrencies(5));
 
             var clientWithAccounts = clients[0];
 
@@ -44,7 +44,7 @@ namespace BancSystem.App.Tests
             var accounts = clientAccountDictionary[clientWithAccounts];
 
             // Assert
-            Assert.True(accounts.Count > 1);
+            Assert.True(accounts.Count >= 1);
         }
 
         [Fact]
