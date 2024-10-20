@@ -17,7 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BankSystem.Application\BankSystem.Application.csproj" />
     <ProjectReference Include="..\BankSystem.Data\BankSystem.Data.csproj" />
     <ProjectReference Include="..\ExportTool\ExportTool.csproj" />
   </ItemGroup>

@@ -29,6 +29,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQL", "SQL", "{71C363C2-391
 		TasksSQL.sql = TasksSQL.sql
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExportTool", "ExportTool\ExportTool.csproj", "{BC4EFF8D-92DB-4126-9FC2-5B2AF4D40B18}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +61,10 @@ Global
 		{908EFD68-23DD-4850-BE92-3CBD41B6A981}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{908EFD68-23DD-4850-BE92-3CBD41B6A981}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{908EFD68-23DD-4850-BE92-3CBD41B6A981}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC4EFF8D-92DB-4126-9FC2-5B2AF4D40B18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC4EFF8D-92DB-4126-9FC2-5B2AF4D40B18}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC4EFF8D-92DB-4126-9FC2-5B2AF4D40B18}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC4EFF8D-92DB-4126-9FC2-5B2AF4D40B18}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -71,6 +77,7 @@ Global
 		{D13AA2E5-0BA6-4669-92D6-8C05125CF963} = {671A6E71-3429-4863-9C36-38C92217E003}
 		{908EFD68-23DD-4850-BE92-3CBD41B6A981} = {671A6E71-3429-4863-9C36-38C92217E003}
 		{71C363C2-3912-4EF4-AAB5-E1ABB069155F} = {BCDD88E8-992E-4798-A26E-12FB1F55E5A5}
+		{BC4EFF8D-92DB-4126-9FC2-5B2AF4D40B18} = {BCDD88E8-992E-4798-A26E-12FB1F55E5A5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0097849E-39FC-49C1-B05C-98D472240A58}
