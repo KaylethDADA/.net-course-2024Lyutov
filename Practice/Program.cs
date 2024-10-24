@@ -63,48 +63,48 @@ namespace Practice
             Console.WriteLine($"Поиск по ключу занял: {stopwatch.Elapsed.TotalMilliseconds} ms");
         }
 
-        public static void Practices()
-        {
-            //Задание к теме "Типы значений и ссылочные типы".
-            var employee = new Employee
-            {
-                FullName = "Иван Иванов",
-                PhoneNumber = "89991234567",
-                BirthDay = new DateTime(1990, 5, 23),
-                Contract = "",
-                Salary = 1
-            };
-            UpdateContract(employee);
+        //public static void Practices()
+        //{
+        //    //Задание к теме "Типы значений и ссылочные типы".
+        //    var employee = new Employee
+        //    {
+        //        FullName = "Иван Иванов",
+        //        PhoneNumber = "89991234567",
+        //        BirthDay = new DateTime(1990, 5, 23),
+        //        Contract = "",
+        //        Salary = 1
+        //    };
+        //    UpdateContract(employee);
 
-            var currency = new Currency("USD","","");
-            UpdateCurrency(ref currency);
+        //    var currency = new Currency("USD","","");
+        //    UpdateCurrency(ref currency);
 
 
-            //Задание к теме "Приведение и преобразование типов".
-            var bankService = new BankService();
+        //    //Задание к теме "Приведение и преобразование типов".
+        //    var bankService = new BankService();
 
-            int ownersCount = 3;
-            int bankProfit = 1000000;
-            int bankExpenses = 500000;
-            int salary = bankService.CalculateOwnerSalary(bankProfit, bankExpenses, ownersCount);
+        //    int ownersCount = 3;
+        //    int bankProfit = 1000000;
+        //    int bankExpenses = 500000;
+        //    int salary = bankService.CalculateOwnerSalary(bankProfit, bankExpenses, ownersCount);
 
-            var client = new Client
-            {
-                FullName = "Алексей Алексеев",
-                PhoneNumber = "111222",
-                BirthDay = new DateTime(2000, 3, 3)
-            };
-            var newEmployee = bankService.ConvertClientToEmployee(client, "", 1);
-        }
+        //    var client = new Client
+        //    {
+        //        FullName = "Алексей Алексеев",
+        //        PhoneNumber = "111222",
+        //        BirthDay = new DateTime(2000, 3, 3)
+        //    };
+        //    var newEmployee = bankService.ConvertClientToEmployee(client, "", 1);
+        //}
 
-        public static void UpdateContract(Employee employee)
-        {
-            employee.Contract = $"Контракт для {employee.FullName}\n Tелефон: {employee.PhoneNumber}\n Возраст: {employee.Age} лет.";
-        }
+        //public static void UpdateContract(Employee employee)
+        //{
+        //    employee.Contract = $"Контракт для {employee.FullName}\n Tелефон: {employee.PhoneNumber}\n Возраст: {employee.Age} лет.";
+        //}
 
-        public static void UpdateCurrency(ref Currency currency)
-        {
-            currency = new Currency(currency.Code, "", "");
-        }
+        //public static void UpdateCurrency(ref Currency currency)
+        //{
+        //    currency = new Currency(currency.Code, "", "");
+        //}
     }
 }

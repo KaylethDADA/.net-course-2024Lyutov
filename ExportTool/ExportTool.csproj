@@ -10,8 +10,4 @@
     <PackageReference Include="CsvHelper" Version="33.0.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\BankSystem.Data\BankSystem.Data.csproj" />
-  </ItemGroup>
-
 </Project>
