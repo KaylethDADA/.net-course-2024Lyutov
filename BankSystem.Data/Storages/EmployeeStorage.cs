@@ -30,7 +30,8 @@ namespace BankSystem.Data.Storages
             if (existingEmployee == null)
                 throw new Exception($"{nameof(Employee)} not found.");
 
-            existingEmployee.FullName = item.FullName;
+            existingEmployee.FirstName = item.FirstName;
+            existingEmployee.LastName = item.LastName;
             existingEmployee.BirthDay = item.BirthDay;
             existingEmployee.PhoneNumber = item.PhoneNumber;
             existingEmployee.Salary = item.Salary;

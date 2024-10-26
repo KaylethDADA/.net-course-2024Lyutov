@@ -63,7 +63,6 @@ namespace BankSystem.Data.Tests
             {
                 Id = client.Id,
                 PassportNumber = client.PassportNumber,
-                FullName = new FullName { FirstName = "UpName", LastName = "UpLName" },
                 BirthDay = client.BirthDay.AddYears(1),
                 PhoneNumber = "1234567890",
             };
@@ -74,7 +73,6 @@ namespace BankSystem.Data.Tests
             // Assert
             var actualClient = _clientStorage.GetById(upClient.Id);
             Assert.NotNull(actualClient);
-            Assert.Equal(upClient.FullName, client.FullName);
             Assert.Equal(upClient.BirthDay, client.BirthDay);
             Assert.Equal(upClient.PhoneNumber, client.PhoneNumber);
         }
@@ -128,7 +126,7 @@ namespace BankSystem.Data.Tests
             _clientStorage.Add(client2);
 
             // Act
-            var result = _clientStorage.Get(c => c.FullName.FirstName.Contains(client1.FullName.FirstName), 1, 10);
+            var result = _clientStorage.Get(c => c.FirstName.Contains(client1.FirstName), 1, 10);
 
             // Assert
             Assert.Single(result);

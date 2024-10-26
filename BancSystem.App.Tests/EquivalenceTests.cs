@@ -18,7 +18,8 @@ namespace BancSystem.App.Tests
             var newClient = new Client
             {
                PassportNumber = existingClient.PassportNumber,
-               FullName = existingClient.FullName,
+               FirstName = existingClient.FirstName,
+               LastName = existingClient.LastName,
                BirthDay = existingClient.BirthDay,
                PhoneNumber = existingClient.PhoneNumber,
             };

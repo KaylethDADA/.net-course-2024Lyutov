@@ -31,7 +31,8 @@ namespace BankSystem.Data.Storages
         {
             var client = _dbContext.Clients.FirstOrDefault(x => x.Id == item.Id);
 
-            client.FullName = item.FullName;
+            client.FirstName = item.FirstName;
+            client.LastName = item.LastName;
             client.PhoneNumber = item.PhoneNumber;
             client.BirthDay = item.BirthDay;
 

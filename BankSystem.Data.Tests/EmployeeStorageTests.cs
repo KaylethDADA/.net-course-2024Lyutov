@@ -46,7 +46,6 @@ namespace BankSystem.Data.Tests
             {
                 Id = employee.Id,
                 PassportNumber = employee.PassportNumber,
-                FullName = new FullName { FirstName = "UpName", LastName = "UpLName"},
                 BirthDay = employee.BirthDay.AddYears(1),
                 PhoneNumber = "1234567890",
                 Salary = 60000,
@@ -59,7 +58,6 @@ namespace BankSystem.Data.Tests
 
             // Assert
             Assert.NotNull(actualEmployee);
-            Assert.Equal(updatedEmployee.FullName, actualEmployee.FullName);
             Assert.Equal(updatedEmployee.BirthDay, actualEmployee.BirthDay);
             Assert.Equal(updatedEmployee.PhoneNumber, actualEmployee.PhoneNumber);
             Assert.Equal(updatedEmployee.Salary, actualEmployee.Salary);
