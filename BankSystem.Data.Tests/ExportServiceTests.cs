@@ -151,7 +151,6 @@ namespace BankSystem.Data.Tests
             var exportedClient = exportService.ImportEntityFromJson(testJsonPathClient);
             Assert.NotNull(exportedClient);
             Assert.Equal(client, exportedClient);
-            Assert.Equal(client.FullName, exportedClient.FullName);
         }
 
         [Fact]
@@ -170,7 +169,6 @@ namespace BankSystem.Data.Tests
             // Assert
             Assert.NotNull(importedClient);
             Assert.Equal(client, importedClient);
-            Assert.Equal(client.FullName, importedClient.FullName);
         }
     }
 }

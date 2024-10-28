@@ -45,7 +45,7 @@ namespace Practice
             stopwatch.Restart();
             var employeeWithMinSalary = employees.OrderBy(e => e.Salary).FirstOrDefault();
             stopwatch.Stop();
-            Console.WriteLine($"Сотрудник с минимальной зарплатой: {employeeWithMinSalary?.FullName}, Зарплата: {employeeWithMinSalary?.Salary}, за {stopwatch.Elapsed.TotalMilliseconds} ms");
+            Console.WriteLine($"Сотрудник с минимальной зарплатой: {employeeWithMinSalary?.LastName}, Зарплата: {employeeWithMinSalary?.Salary}, за {stopwatch.Elapsed.TotalMilliseconds} ms");
 
             Console.WriteLine();
 

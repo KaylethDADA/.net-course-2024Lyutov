@@ -10,16 +10,11 @@ namespace BankSystem.Data.EntityConfigurations
         {
             builder.HasKey(x => x.Id);
 
-            builder.OwnsOne(x => x.FullName, fullName =>
-            {
-                fullName.Property(x => x.FirstName)
-                .IsRequired();
-                
-                fullName.Property(x => x.LastName)
+            builder.Property(x => x.FirstName)
                 .IsRequired();
 
-                fullName.Property(x => x.MiddleName);
-            });
+            builder.Property(x => x.LastName)
+                .IsRequired();
 
             builder.Property(x => x.BirthDay)
                   .IsRequired()

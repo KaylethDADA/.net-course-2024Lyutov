@@ -9,12 +9,8 @@ namespace BankSystem.Application.Services
         {
             var clientFaker = new Faker<Client>()
                 .RuleFor(c => c.Id, f => Guid.NewGuid())
-                .RuleFor(c => c.FullName, f => new FullName
-                {
-                    FirstName = f.Name.FirstName(),
-                    LastName = f.Name.LastName(),
-                    MiddleName = f.Random.Bool() ? f.Name.LastName() + f.Name.FirstName() : null
-                })
+                .RuleFor(c => c.FirstName, f => f.Name.FirstName())
+                .RuleFor(c => c.LastName, f => f.Name.LastName())
                 .RuleFor(c => c.PhoneNumber, f => $"+373 77 {f.Random.Int(4, 9)} {f.Random.Number(100, 999)}")
                 .RuleFor(c => c.PassportNumber, f => f.Random.String2(10, "0123456789"))
                 .RuleFor(c => c.BirthDay, f => f.Date.Past(50, DateTime.Now.AddYears(-18)))
@@ -27,12 +23,8 @@ namespace BankSystem.Application.Services
         {
             var employeeFaker = new Faker<Employee>()
                 .RuleFor(e => e.Id, f => Guid.NewGuid())
-                .RuleFor(e => e.FullName, f => new FullName
-                {
-                    FirstName = f.Name.FirstName(),
-                    LastName = f.Name.LastName(),
-                    MiddleName = f.Random.Bool() ? f.Name.LastName() + f.Name.FirstName() : null
-                })
+                .RuleFor(c => c.FirstName, f => f.Name.FirstName())
+                .RuleFor(c => c.LastName, f => f.Name.LastName())
                 .RuleFor(e => e.PhoneNumber, f => $"+373 77 {f.Random.Int(4, 9)} {f.Random.Number(100, 999)}")
                 .RuleFor(e => e.PassportNumber, f => f.Random.String2(10, "0123456789"))
                 .RuleFor(e => e.BirthDay, f => f.Date.Past(50, DateTime.Now.AddYears(-18)))

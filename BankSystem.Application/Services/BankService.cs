@@ -53,7 +53,7 @@ namespace BankSystem.Application.Services
         {
             return new Employee
             { 
-                FullName = client.FullName,
+                FirstName = client.FirstName,
                 PhoneNumber = client.PhoneNumber,
                 BirthDay = client.BirthDay,
                 Contract = contract,
