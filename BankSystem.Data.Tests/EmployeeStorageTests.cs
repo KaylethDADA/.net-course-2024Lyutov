@@ -48,6 +48,8 @@ namespace BankSystem.Data.Tests
             var updatedEmployee = new Employee
             {
                 Id = employee.Id,
+                FirstName = employee.FirstName,
+                LastName = employee.LastName,
                 PassportNumber = employee.PassportNumber,
                 BirthDay = employee.BirthDay.AddYears(1),
                 PhoneNumber = "1234567890",

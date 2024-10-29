@@ -16,7 +16,7 @@ namespace BankSystem.Application.Services
             _currencyStorage = currencyStorage;
         }
 
-        public void AddClient(Client client)
+        public async Task AddClientAsync(Client client, CancellationToken cancellationToken)
         {
             if (client.Age < 18)
                 throw new ClientValidationException($"{nameof(Client)} must be over 18 years old.");
@@ -24,21 +24,21 @@ namespace BankSystem.Application.Services
             if (string.IsNullOrWhiteSpace(client.PassportNumber))
                 throw new ClientValidationException($"The {nameof(Client)} must have passport details.");
 
-            var result = GetByPassportNumber(client.PassportNumber);
+            var result = await GetByPassportNumberAsync(client.PassportNumber, cancellationToken);
             if (result != null)
                 throw new ClientValidationException($"A {nameof(Client)} with the same passport number already exists.");
 
             try
             {
-                _clientStorage.Add(client);
+                await _clientStorage.AddAsync(client, cancellationToken);
 
                 var defaultAccount = new Account
                 {
-                    Currency = _currencyStorage.GetDefaultCurrency(),
+                    Currency = await _currencyStorage.GetDefaultCurrencyAsync(cancellationToken),
                     Amount = 0
                 };
 
-                _clientStorage.AddAccount(client.Id, defaultAccount);
+                await _clientStorage.AddAccountAsync(client.Id, defaultAccount, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -46,15 +46,15 @@ namespace BankSystem.Application.Services
             }
         }
 
-        public void AddAccount(Guid clientId, Account account)
+        public async Task AddAccountAsync(Guid clientId, Account account, CancellationToken cancellationToken)
         {
-            var client = GetById(clientId);
+            var client = GetByIdAsync(clientId, cancellationToken);
             if (client == null)
                 throw new ClientValidationException($"{nameof(Client)} not found.");
 
             try
             {
-                _clientStorage.AddAccount(clientId, account);
+                await _clientStorage.AddAccountAsync(clientId, account, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -62,7 +62,7 @@ namespace BankSystem.Application.Services
             }
         }
 
-        public void UpdateClient(Client client)
+        public async Task UpdateClientAsync(Client client, CancellationToken cancellationToken)
         {
             if (client == null)
                 throw new ClientValidationException("The old or new client cannot be zero.");
@@ -73,13 +73,13 @@ namespace BankSystem.Application.Services
             if (string.IsNullOrWhiteSpace(client.PassportNumber))
                 throw new ClientValidationException($"The {nameof(Client)} must have passport details.");
 
-            var result = GetById(client.Id);
+            var result = GetByIdAsync(client.Id, cancellationToken);
             if (result == null)
                 throw new ClientValidationException($"{nameof(Client)} not found.");
 
             try
             {
-                _clientStorage.Update(client);
+                await _clientStorage.UpdateAsync(client, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -87,18 +87,14 @@ namespace BankSystem.Application.Services
             }
         }
 
-        public void UpdateAccount(Account account)
+        public async Task UpdateAccountAsync(Account account, CancellationToken cancellationToken)
         {
             if (account.Amount < 0)
                 throw new ClientValidationException("The new account balance cannot be negative.");
 
-            var result = GetAccountsByClientId(account.ClientId).FirstOrDefault(x => x.Id == account.Id);
-            if (result == null)
-                throw new Exception($"{nameof(Account)} not found.");
-
             try
             {
-                _clientStorage.UpdateAccount(account);
+               await _clientStorage.UpdateAccountAsync(account, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -106,17 +102,21 @@ namespace BankSystem.Application.Services
             }
         }
 
-        public ICollection<Client> Get(Expression<Func<Client, bool>> filter, int pageNumber, int pageSize)
+        public async Task<ICollection<Client>> GetAsync(
+            Expression<Func<Client, bool>>? filter,
+            int? pageNumber,
+            int? pageSize,
+            CancellationToken cancellationToken)
         {
             if (pageNumber <= 0)
-                throw new ClientException("Page number must be greater than zero.");
+                throw new ClientValidationException("Page number must be greater than zero.");
 
             if (pageSize <= 0)
-                throw new ClientException("Page size must be greater than zero.");
+                throw new ClientValidationException("Page size must be greater than zero.");
 
             try
             {
-                return _clientStorage.Get(filter, pageNumber, pageSize);
+                return await _clientStorage.GetAsync(filter, pageNumber, pageSize, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -124,11 +124,11 @@ namespace BankSystem.Application.Services
             }
         }
 
-        public Client? GetById(Guid id)
+        public async Task<Client> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             try
             {
-                return _clientStorage.GetById(id);
+                return await _clientStorage.GetByIdAsync(id, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -136,11 +136,11 @@ namespace BankSystem.Application.Services
             }
         }
 
-        public ICollection<Account> GetAccountsByClientId(Guid clientId)
+        public async Task<ICollection<Account>> GetAccountsByClientIdAsync(Guid clientId, CancellationToken cancellationToken)
         {
             try
             {
-                return _clientStorage.GetAccountsByClientId(clientId);
+                return await _clientStorage.GetAccountsByClientIdAsync(clientId, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -148,23 +148,23 @@ namespace BankSystem.Application.Services
             }
         }
 
-        public Client? GetByPassportNumber(string passportNumber)
+        public async Task<Client> GetByPassportNumberAsync(string passportNumber, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(passportNumber))
                 throw new ClientValidationException($"The {nameof(Client)} must have passport details.");
            
-            return  _clientStorage.GetByPassportNumber(passportNumber);
+            return await _clientStorage.GetByPassportNumberAsync(passportNumber, cancellationToken);
         }
 
-        public void DeleteClient(Guid clientId)
+        public async Task DeleteClientAsync(Guid clientId, CancellationToken cancellationToken)
         {
-            var client = _clientStorage.GetById(clientId);
+            var client = await _clientStorage.GetByIdAsync(clientId, cancellationToken);
             if (client == null)
-                throw new Exception($"{nameof(Client)} not found.");
+                throw new ClientValidationException($"{nameof(Client)} not found.");
 
             try
             {
-                _clientStorage.Delete(clientId);
+                await _clientStorage.DeleteAsync(clientId, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -172,16 +172,32 @@ namespace BankSystem.Application.Services
             }
         }
 
-        public void DeleteAccount(Guid accountId)
+        public async Task DeleteAccountAsync(Guid accountId, CancellationToken cancellationToken)
         {
             try
             {
-                _clientStorage.DeleteAccount(accountId);
+                await _clientStorage.DeleteAccountAsync(accountId, cancellationToken);
             }
             catch (Exception ex)
             {
                 throw new EmployeeException($"An error occurred while deleting {nameof(Account)}.", ex);
             }
+        }
+
+        public async Task WithdrawAsync(Guid clientId, Guid accountId, decimal amount, CancellationToken cancellationToken)
+        {
+            var listAccount = await _clientStorage.GetAccountsByClientIdAsync(clientId, cancellationToken);
+            var exAccount = listAccount.FirstOrDefault(x => x.Id == accountId);
+
+            if (exAccount == null)
+                throw new ClientValidationException("Account not found for the specified client");
+
+            if (exAccount.Amount < amount)
+                throw new ClientValidationException("Insufficient funds");
+
+            exAccount.Amount -= amount;
+
+            await _clientStorage.UpdateAccountAsync(exAccount, cancellationToken);
         }
     }
 }

@@ -10,6 +10,7 @@ namespace BancSystem.App.Tests
         private readonly ClientStorage _clientStorage;
         private readonly CurrencyStorage _currencyStorage;
         private readonly TestDataGenerator _testDataGenerator;
+        private readonly CancellationToken _token;
 
         public CurrencyServiceTests()
         {
@@ -17,29 +18,30 @@ namespace BancSystem.App.Tests
             _clientStorage = new ClientStorage(dbContext);
             _currencyStorage = new CurrencyStorage(dbContext);
             _testDataGenerator = new TestDataGenerator();
+            _token = new CancellationToken();
         }
 
         [Fact]
-        public void AddCurrencyPositiveTest()
+        public async Task AddCurrencyPositiveTest()
         {
             // Arrange
             var currency = _testDataGenerator.GenerateCurrencies(1).First();
 
             // Act
-            _currencyStorage.Add(currency);
+            await _currencyStorage.AddAsync(currency, _token);
 
             // Assert
-            var storedCurrency = _currencyStorage.GetById(currency.Id);
+            var storedCurrency = await _currencyStorage.GetByIdAsync(currency.Id, _token);
             Assert.NotNull(storedCurrency);
             Assert.Equal(currency.Code, storedCurrency.Code);
         }
 
         [Fact]
-        public void UpdateCurrencyPositiveTest()
+        public async Task UpdateCurrencyPositiveTest()
         {
             // Arrange
             var currency = _testDataGenerator.GenerateCurrencies(1).First();
-            _currencyStorage.Add(currency);
+            await _currencyStorage.AddAsync(currency, _token);
 
             var updatedCurrency = new Currency
             {
@@ -50,8 +52,8 @@ namespace BancSystem.App.Tests
             };
 
             // Act
-            _currencyStorage.Update(updatedCurrency);
-            var actualCurrency = _currencyStorage.GetById(currency.Id);
+            await _currencyStorage.UpdateAsync(updatedCurrency, _token);
+            var actualCurrency = await _currencyStorage.GetByIdAsync(currency.Id, _token);
 
             // Assert
             Assert.NotNull(actualCurrency);
@@ -59,14 +61,14 @@ namespace BancSystem.App.Tests
         }
 
         [Fact]
-        public void GetCurrencyByIdPositiveTest()
+        public async Task GetCurrencyByIdPositiveTest()
         {
             // Arrange
             var currency = _testDataGenerator.GenerateCurrencies(1).First();
-            _currencyStorage.Add(currency);
+            await _currencyStorage.AddAsync(currency, _token);
 
             // Act
-            var actualCurrency = _currencyStorage.GetById(currency.Id);
+            var actualCurrency = await _currencyStorage.GetByIdAsync(currency.Id, _token);
 
             // Assert
             Assert.NotNull(actualCurrency);
@@ -74,7 +76,7 @@ namespace BancSystem.App.Tests
         }
 
         [Fact]
-        public void GetDefaultCurrencyPositiveTest()
+        public async Task GetDefaultCurrencyPositiveTest()
         {
             // Arrange
             var defaultCurrency = new Currency
@@ -85,10 +87,10 @@ namespace BancSystem.App.Tests
                 Symbol = "$"
             };
 
-            _currencyStorage.Add(defaultCurrency);
+            await _currencyStorage.AddAsync(defaultCurrency, _token);
 
             // Act
-            var actualDefaultCurrency = _currencyStorage.GetDefaultCurrency();
+            var actualDefaultCurrency = await _currencyStorage.GetDefaultCurrencyAsync(_token);
 
             // Assert
             Assert.NotNull(actualDefaultCurrency);
@@ -96,17 +98,17 @@ namespace BancSystem.App.Tests
         }
 
         [Fact]
-        public void DeleteCurrencyPositiveTest()
+        public async Task DeleteCurrencyPositiveTest()
         {
             // Arrange
             var currency = _testDataGenerator.GenerateCurrencies(1).First();
-            _currencyStorage.Add(currency);
+            await _currencyStorage.AddAsync(currency, _token);
 
             // Act
-            _currencyStorage.Delete(currency.Id);
+            await _currencyStorage.DeleteAsync(currency.Id, _token);
 
             // Assert
-            var deletedCurrency = _currencyStorage.GetById(currency.Id);
+            var deletedCurrency = await _currencyStorage.GetByIdAsync(currency.Id, _token);
             Assert.Null(deletedCurrency);
         }
     }

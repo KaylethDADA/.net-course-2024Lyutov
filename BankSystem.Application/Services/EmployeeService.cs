@@ -14,7 +14,7 @@ namespace BankSystem.Application.Services
             _employeeStorage = employeeStorage;
         }
 
-        public void Add(Employee employee)
+        public async Task AddEmploeeAsync(Employee employee, CancellationToken cancellationToken)
         {
             if (employee == null)
                 throw new EmployeeValidationException($"The {nameof(Employee)} cannot be null.");
@@ -27,7 +27,7 @@ namespace BankSystem.Application.Services
 
             try
             {
-                _employeeStorage.Add(employee);
+                await _employeeStorage.AddAsync(employee, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -35,7 +35,7 @@ namespace BankSystem.Application.Services
             }
         }
 
-        public void Update(Employee employee)
+        public async Task UpdateAsync(Employee employee, CancellationToken cancellationToken)
         {
             if (employee == null)
                 throw new EmployeeValidationException($"The {nameof(Employee)} cannot be null.");
@@ -48,7 +48,7 @@ namespace BankSystem.Application.Services
 
             try
             {
-                _employeeStorage.Update(employee);
+                await _employeeStorage.UpdateAsync(employee, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -56,7 +56,11 @@ namespace BankSystem.Application.Services
             }
         }
 
-        public ICollection<Employee> Get(Expression<Func<Employee, bool>> filter, int pageNumber, int pageSize)
+        public async Task<ICollection<Employee>> GetAsync(
+            Expression<Func<Employee, bool>>? filter,
+            int? pageNumber,
+            int? pageSize,
+            CancellationToken cancellationToken)
         {
             if (pageNumber <= 0)
                 throw new EmployeeException("Page number must be greater than zero.");
@@ -66,7 +70,7 @@ namespace BankSystem.Application.Services
 
             try
             {
-                return _employeeStorage.Get(filter, pageNumber, pageSize);
+                return await _employeeStorage.GetAsync(filter, pageNumber, pageSize, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -74,11 +78,11 @@ namespace BankSystem.Application.Services
             }
         }
 
-        public Employee GetById(Guid id)
+        public async Task<Employee> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             try
             {
-                return _employeeStorage.GetById(id);
+                return await _employeeStorage.GetByIdAsync(id, cancellationToken);
             }
             catch(Exception ex)
             {
@@ -86,11 +90,11 @@ namespace BankSystem.Application.Services
             }
         }
 
-        public void Delete(Guid id)
+        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
         {
             try
             {
-                _employeeStorage.Delete(id);
+                await _employeeStorage.DeleteAsync(id, cancellationToken);
             }
             catch (Exception ex)
             {

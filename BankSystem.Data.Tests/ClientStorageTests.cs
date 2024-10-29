@@ -65,6 +65,8 @@ namespace BankSystem.Data.Tests
             var upClient = new Client
             {
                 Id = client.Id,
+                FirstName = client.FirstName,
+                LastName = client.LastName,
                 PassportNumber = client.PassportNumber,
                 BirthDay = client.BirthDay.AddYears(1),
                 PhoneNumber = "1234567890",
@@ -187,7 +189,7 @@ namespace BankSystem.Data.Tests
 
             // Assert
             var deletedClient = await _clientStorage.GetAsync(c => c.Id == client.Id, null, null, _token);
-            Assert.Null(deletedClient.First());
+            Assert.Null(deletedClient.FirstOrDefault());
         }
 
         [Fact]

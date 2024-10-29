@@ -8,5 +8,6 @@
         public Currency Currency { get; set; }
         public Guid ClientId { get; set; }
         public Client Client { get; set; }
+        public DateTime LastUpdatedDate { get; set; }
     }
 }

@@ -9,16 +9,18 @@ namespace BancSystem.App.Tests
     {
         private readonly EmployeeService _employeeService;
         private readonly TestDataGenerator _testDataGenerator;
+        private readonly CancellationToken _token;
 
         public EmployeeServiceTests()
         {
             var dbContext = new BankSystemDbContext();
             _employeeService = new EmployeeService(new EmployeeStorage(dbContext));
             _testDataGenerator = new TestDataGenerator();
+            _token = new CancellationToken();
         }
 
         [Fact]
-        public void AddEmployeePositiveTest()
+        public async Task AddEmployeePositiveTest()
         {
             // Arrange
             var employees = _testDataGenerator.GenerateEmployees(10);
@@ -26,10 +28,10 @@ namespace BancSystem.App.Tests
             // Act
             foreach (var employee in employees)
             {
-                _employeeService.Add(employee);
+                await _employeeService.AddEmploeeAsync(employee, _token);
             }
 
-            var actualEmployees = _employeeService.Get(e => true, 1, 10);
+            var actualEmployees = await _employeeService.GetAsync(e => true, 1, 10, _token);
 
             // Assert
             Assert.NotNull(actualEmployees);
@@ -37,15 +39,17 @@ namespace BancSystem.App.Tests
         }
 
         [Fact]
-        public void UpdateEmployeePositiveTest()
+        public async Task UpdateEmployeePositiveTest()
         {
             // Arrange
             var employee = _testDataGenerator.GenerateEmployees(1).First();
-            _employeeService.Add(employee);
+            await _employeeService.AddEmploeeAsync(employee, _token);
 
             var updatedEmployee = new Employee
             {
                 Id = employee.Id,
+                FirstName = "ad",
+                LastName = "adad",
                 PassportNumber = employee.PassportNumber,
                 BirthDay = employee.BirthDay.AddYears(1),
                 PhoneNumber = "1234567890",
@@ -54,8 +58,8 @@ namespace BancSystem.App.Tests
             };
 
             // Act
-            _employeeService.Update(updatedEmployee);
-            var actualEmployee = _employeeService.GetById(updatedEmployee.Id);
+            await _employeeService.UpdateAsync(updatedEmployee, _token);
+            var actualEmployee = await _employeeService.GetByIdAsync(updatedEmployee.Id, _token);
 
             // Assert
             Assert.NotNull(actualEmployee);
@@ -66,17 +70,17 @@ namespace BancSystem.App.Tests
         }
 
         [Fact]
-        public void GetFilterEmployeesPositiveTest()
+        public async Task GetFilterEmployeesPositiveTest()
         {
             // Arrange
             var employees = _testDataGenerator.GenerateEmployees(10);
             foreach (var employee in employees)
             {
-                _employeeService.Add(employee);
+                await _employeeService.AddEmploeeAsync(employee, _token);
             }
 
             // Act
-            var allEmployees = _employeeService.Get(e => true, 1, 10);
+            var allEmployees = await _employeeService.GetAsync(e => true, 1, 10, _token);
 
             // Assert
             Assert.NotNull(allEmployees);
@@ -84,18 +88,18 @@ namespace BancSystem.App.Tests
         }
 
         [Fact]
-        public void GetByIdEmployeePositiveTest()
+        public async Task GetByIdEmployeePositiveTest()
         {
             // Arrange
             var employees = _testDataGenerator.GenerateEmployees(10);
             foreach (var employee in employees)
             {
-                _employeeService.Add(employee);
+               await  _employeeService.AddEmploeeAsync(employee, _token);
             }
             var employeeToFind = employees.First();
 
             // Act
-            var foundEmployee = _employeeService.GetById(employeeToFind.Id);
+            var foundEmployee = await _employeeService.GetByIdAsync(employeeToFind.Id, _token);
 
             // Assert
             Assert.NotNull(foundEmployee);
@@ -103,17 +107,17 @@ namespace BancSystem.App.Tests
         }
 
         [Fact]
-        public void DeleteEmployeePositiveTest()
+        public async Task DeleteEmployeePositiveTest()
         {
             // Arrange
             var employee = _testDataGenerator.GenerateEmployees(1).First();
-            _employeeService.Add(employee);
+            await _employeeService.AddEmploeeAsync(employee, _token);
 
             // Act
-            _employeeService.Delete(employee.Id);
+            await _employeeService.DeleteAsync(employee.Id, _token);
 
             // Assert
-            var exEmployees = _employeeService.GetById(employee.Id);
+            var exEmployees = await _employeeService.GetByIdAsync(employee.Id, _token);
             Assert.Null(exEmployees);
         }
     } 
