@@ -1,6 +1,7 @@
 ﻿using BankSystem.Application.Services;
 using BankSystem.Data.Storages;
 using BankSystem.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace BankSystem.Data.Tests
 {
@@ -9,37 +10,39 @@ namespace BankSystem.Data.Tests
         private readonly BankSystemDbContext _dbContext;
         private readonly EmployeeStorage _employeeStorage;
         private readonly TestDataGenerator _testDataGenerator;
+        private readonly CancellationToken _token;
 
         public EmployeeStorageTests()
         {
             _dbContext = new BankSystemDbContext();
             _employeeStorage = new EmployeeStorage(_dbContext);
             _testDataGenerator = new TestDataGenerator();
+            _token = new CancellationToken();
         }
 
         [Fact]
-        public void AddEmployeePositiveTest()
+        public async Task AddEmployeePositiveTest()
         {
             // Arrange
             var employee = _testDataGenerator.GenerateEmployees(1).First();
 
             // Act
-            _employeeStorage.Add(employee);
+            await _employeeStorage.AddAsync(employee, _token);
 
             // Assert
-            var actualEmployees = _employeeStorage.GetById(employee.Id);
+            var actualEmployees = await _employeeStorage.GetByIdAsync(employee.Id, _token);
 
             Assert.NotNull(actualEmployees);
             Assert.Equal(employee, actualEmployees);
         }
 
         [Fact]
-        public void UpdateEmployeePositiveTest()
+        public async Task UpdateEmployeePositiveTest()
         {
             // Arrange
             var employee = _testDataGenerator.GenerateEmployees(1).First();
 
-            _employeeStorage.Add(employee);
+            await _employeeStorage.AddAsync(employee, _token);
 
             // Create updated employee
             var updatedEmployee = new Employee
@@ -53,8 +56,8 @@ namespace BankSystem.Data.Tests
             };
 
             // Act
-            _employeeStorage.Update(updatedEmployee);
-            var actualEmployee = _employeeStorage.GetById(updatedEmployee.Id);
+            await _employeeStorage.UpdateAsync(updatedEmployee, _token);
+            var actualEmployee = await _employeeStorage.GetByIdAsync(updatedEmployee.Id, _token);
 
             // Assert
             Assert.NotNull(actualEmployee);
@@ -65,18 +68,18 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
-        public void GetByIdEmployeePositiveTest()
+        public async Task GetByIdEmployeePositiveTest()
         {
             // Arrange
             var employees = _testDataGenerator.GenerateEmployees(10);
             foreach (var employee in employees)
             {
-                _employeeStorage.Add(employee);
+                await _employeeStorage.AddAsync(employee, _token);
             }
             var employeeToFind = employees.First();
 
             // Act
-            var foundEmployee = _employeeStorage.GetById(employeeToFind.Id);
+            var foundEmployee = await _employeeStorage.GetByIdAsync(employeeToFind.Id, _token);
 
             // Assert
             Assert.NotNull(foundEmployee);
@@ -84,17 +87,17 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
-        public void GetPageEmployeesPositiveTest()
+        public async Task GetPageEmployeesPositiveTest()
         {
             // Arrange
             var employees = _testDataGenerator.GenerateEmployees(10);
             foreach (var employee in employees)
             {
-                _employeeStorage.Add(employee);
+                await _employeeStorage.AddAsync(employee, _token);
             }
 
             // Act
-            var allEmployees = _employeeStorage.Get(e => true, 1, 10);
+            var allEmployees = await _employeeStorage.GetAsync(e => true, 1, 10, _token);
 
             // Assert
             Assert.NotNull(allEmployees);
@@ -102,17 +105,17 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
-        public void DeleteEmployeePositiveTest()
+        public async Task DeleteEmployeePositiveTest()
         {
             // Arrange
             var employee = _testDataGenerator.GenerateEmployees(1).First();
-            _employeeStorage.Add(employee);
+            await _employeeStorage.AddAsync(employee, _token);
 
             // Act
-            _employeeStorage.Delete(employee.Id);
+            await _employeeStorage.DeleteAsync(employee.Id, _token);
 
             // Assert
-            var deletedEmployees = _dbContext.Clients.FirstOrDefault(c => c.Id == employee.Id);
+            var deletedEmployees = await _dbContext.Clients.FirstOrDefaultAsync(c => c.Id == employee.Id);
             Assert.Null(deletedEmployees);
         }
     }

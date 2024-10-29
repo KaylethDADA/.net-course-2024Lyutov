@@ -1,5 +1,6 @@
 ﻿using BankSystem.Application.Interfaces;
 using BankSystem.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace BankSystem.Data.Storages
@@ -13,81 +14,99 @@ namespace BankSystem.Data.Storages
             _dbContext = dbContext;
         }
 
-        public void Add(Client item)
+        public async Task AddAsync(Client item, CancellationToken cancellationToken)
         {
-            _dbContext.Clients.Add(item);            
-            _dbContext.SaveChanges();
+            await _dbContext.Clients.AddAsync(item);
+            await _dbContext.SaveChangesAsync();
         }
 
-        public void AddAccount(Guid clientId, Account account)
+        public async Task AddAccountAsync(Guid clientId, Account account, CancellationToken cancellationToken)
         {
             account.ClientId = clientId;
-            
-            _dbContext.Accounts.Add(account);
-            _dbContext.SaveChanges();
+
+            await _dbContext.Accounts.AddAsync(account);
+            await _dbContext.SaveChangesAsync();
         }
 
-        public void Update(Client item)
+        public async Task UpdateAsync(Client item, CancellationToken cancellationToken)
         {
-            var client = _dbContext.Clients.FirstOrDefault(x => x.Id == item.Id);
+            var client = await _dbContext.Clients.FirstOrDefaultAsync(x => x.Id == item.Id);
 
             client.FirstName = item.FirstName;
             client.LastName = item.LastName;
             client.PhoneNumber = item.PhoneNumber;
             client.BirthDay = item.BirthDay;
 
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
         }
 
-        public void UpdateAccount(Account account)
+        public async Task UpdateAccountAsync(Account account, CancellationToken cancellationToken)
         {
-            var exAccount = _dbContext.Accounts.FirstOrDefault(x => x.Id == account.Id);
+            var exAccount = await _dbContext.Accounts.FirstOrDefaultAsync(x => x.Id == account.Id);
+
+            if (exAccount == null)
+                throw new Exception("Account not found.");
 
             exAccount.Amount = account.Amount;
-
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        public ICollection<Client> Get(Expression<Func<Client, bool>> filter, int pageNumber, int pageSize)
+        public async Task<ICollection<Account>> GetAllAccount(CancellationToken cancellationToken)
         {
-            var clients = _dbContext.Clients.Where(filter).Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-
-            return clients;
+            return await _dbContext.Accounts.ToListAsync();
         }
 
-        public Client? GetById(Guid id)
+        public async Task<ICollection<Client>> GetAsync(
+            Expression<Func<Client, bool>>? filter,
+            int? pageNumber,
+            int? pageSize,
+            CancellationToken cancellationToken)
         {
-            return _dbContext.Clients.FirstOrDefault(x => x.Id == id);
+            var quer = _dbContext.Set<Client>().AsQueryable();
+
+            if (filter != null)
+                quer = quer.Where(filter);
+
+            if (pageNumber != null && pageSize != null)
+                quer = quer.Skip((pageNumber.Value - 1) * pageSize.Value)
+                           .Take(pageSize.Value);
+
+            return await quer.ToArrayAsync();
         }
 
-        public ICollection<Account> GetAccountsByClientId(Guid clientId)
+        public async Task<Client>? GetByIdAsync(Guid clientId, CancellationToken cancellationToken)
         {
-            return _dbContext.Accounts.Where(x => x.ClientId == clientId).ToList();
+            return await _dbContext.Clients.FirstOrDefaultAsync(x => x.Id == clientId);
         }
 
-        public Client? GetByPassportNumber(string passportNumber)
+        public async Task<ICollection<Account>> GetAccountsByClientIdAsync(Guid clientId, CancellationToken cancellationToken)
         {
-            return _dbContext.Clients.FirstOrDefault(c => c.PassportNumber == passportNumber);
+            return await _dbContext.Accounts.Where(x => x.ClientId == clientId).ToArrayAsync();
         }
 
-        public void Delete(Guid id)
+        public async Task<Client>? GetByPassportNumberAsync(string passportNumber, CancellationToken cancellationToken)
         {
-            var client = _dbContext.Clients.FirstOrDefault(x => x.Id == id);
+            return await _dbContext.Clients.FirstOrDefaultAsync(c => c.PassportNumber == passportNumber);
+        }
+
+        public async Task DeleteAsync(Guid clientidId, CancellationToken cancellationToken)
+        {
+            var client = await _dbContext.Clients.FirstOrDefaultAsync(x => x.Id == clientidId);
+            if (client == null)
+                throw new Exception($"{nameof(Client)} not found.");
 
             _dbContext.Clients.Remove(client);
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
         }
 
-        public void DeleteAccount(Guid accountId)
+        public async Task DeleteAccountAsync(Guid accountId, CancellationToken cancellationToken)
         {
-            var account = _dbContext.Accounts.FirstOrDefault(x => x.Id == accountId);
+            var account = await _dbContext.Accounts.FirstOrDefaultAsync(x => x.Id == accountId);
             if (account == null)
                 throw new Exception($"{nameof(Account)} not found.");
 
             _dbContext.Accounts.Remove(account);
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

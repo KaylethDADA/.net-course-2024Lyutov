@@ -1,5 +1,6 @@
 ﻿using BankSystem.Application.Interfaces;
 using BankSystem.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace BankSystem.Data.Storages
@@ -13,19 +14,19 @@ namespace BankSystem.Data.Storages
             _dbContext = dbContext;
         }
 
-        public void Add(Employee item)
+        public async Task AddAsync(Employee item, CancellationToken cancellationToken)
         {
-            var employy = _dbContext.Employees.FirstOrDefault(x => x.PassportNumber == item.PassportNumber);
+            var employy = await _dbContext.Employees.FirstOrDefaultAsync(x => x.PassportNumber == item.PassportNumber);
             if (employy != null)
                 throw new Exception($"A {nameof(Employee)} with the same passport number already exists.");
 
-            _dbContext.Employees.Add(item);
-            _dbContext.SaveChanges();
+            await _dbContext.Employees.AddAsync(item);
+            await _dbContext.SaveChangesAsync();
         }
 
-        public void Update(Employee item)
+        public async Task UpdateAsync(Employee item, CancellationToken cancellationToken)
         {
-            var existingEmployee = _dbContext.Employees.Find(item.Id);
+            var existingEmployee = await _dbContext.Employees.FirstOrDefaultAsync(x => x.Id == item.Id);
 
             if (existingEmployee == null)
                 throw new Exception($"{nameof(Employee)} not found.");
@@ -37,31 +38,40 @@ namespace BankSystem.Data.Storages
             existingEmployee.Salary = item.Salary;
             existingEmployee.Contract = item.Contract;
 
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
         }
 
-        public ICollection<Employee> Get(Expression<Func<Employee, bool>> filter, int pageNumber, int pageSize)
+        public async Task<ICollection<Employee>> GetAsync(
+            Expression<Func<Employee, bool>>? filter,
+            int? pageNumber,
+            int? pageSize,
+            CancellationToken cancellationToken)
         {
-            var employees = _dbContext.Employees.Where(filter).Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
+            var quer = _dbContext.Employees.AsQueryable();
 
-            return employees;
+            if (filter != null)
+                quer = quer.Where(filter);
+
+            if (pageNumber != null && pageSize != null)
+                quer = quer.Skip((pageNumber.Value - 1) * pageSize.Value)
+                           .Take(pageSize.Value);
+
+            return await quer.ToListAsync();
         }
 
-        public Employee? GetById(Guid id)
+        public async Task<Employee>? GetByIdAsync(Guid id, CancellationToken cancellationToken)
         {
-            return _dbContext.Employees.FirstOrDefault(x => x.Id == id); 
+            return await _dbContext.Employees.FirstOrDefaultAsync(x => x.Id == id); 
         }
 
-        public void Delete(Guid id)
+        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
         {
-            var employee = _dbContext.Employees.FirstOrDefault(x => x.Id == id);
+            var employee = await _dbContext.Employees.FirstOrDefaultAsync(x => x.Id == id);
             if (employee == null)
                 throw new Exception($"{nameof(Employee)} not found.");
 
             _dbContext.Employees.Remove(employee);
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

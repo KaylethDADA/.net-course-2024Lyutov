@@ -4,10 +4,10 @@ namespace BankSystem.Application.Interfaces
 {
     public interface IStorage<T>
     {
-        void Add(T item); 
-        void Update(T item);
-        T? GetById(Guid Id);
-        ICollection<T> Get(Expression<Func<T, bool>> filter, int pageNumber, int pageSize);
-        void Delete(Guid id);
+        Task AddAsync(T item, CancellationToken cancellationToken); 
+        Task UpdateAsync(T item, CancellationToken cancellationToken);
+        Task<T> GetByIdAsync(Guid Id, CancellationToken cancellationToken);
+        Task<ICollection<T>> GetAsync(Expression<Func<T, bool>>? filter, int? pageNumber, int? pageSize, CancellationToken cancellationToken);
+        Task DeleteAsync(Guid id, CancellationToken cancellationToken);
     }
 }

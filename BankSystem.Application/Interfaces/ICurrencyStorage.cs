@@ -4,6 +4,6 @@ namespace BankSystem.Application.Interfaces
 {
     public interface ICurrencyStorage : IStorage<Currency>
     {
-        Currency GetDefaultCurrency();
+        Task<Currency> GetDefaultCurrencyAsync(CancellationToken cancellationToken);
     }
 }
