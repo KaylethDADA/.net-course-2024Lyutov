@@ -38,11 +38,8 @@ namespace BancSystem.App.Tests
                 {
                     tasks.Add(clientService.WithdrawAsync(withdrawal.clientId, withdrawal.accountId, withdrawal.amount, CancellationToken.None));
 
-                    if (tasks.Count > 0)
-                    {
-                        await Task.WhenAll(tasks);
-                        tasks.Clear();
-                    }
+                    await Task.WhenAll(tasks);
+                    tasks.Clear();
                 }
                 else
                 {
