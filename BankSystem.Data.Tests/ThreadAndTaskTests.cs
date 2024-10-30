@@ -2,6 +2,7 @@
 using BankSystem.Domain.Models;
 using ExportTool;
 using System.Collections.Concurrent;
+using System.Text.Json;
 
 namespace BankSystem.Data.Tests
 {
@@ -88,27 +89,64 @@ namespace BankSystem.Data.Tests
 
         private void WriteClientToFile(Client client)
         {
+            var filePath = Path.Combine(_testDirectory, $"{_filePrefix}{_fileCounter}.json");
+            long currentFileSize = File.Exists(filePath) ? new FileInfo(filePath).Length : 0;
+
+            if (currentFileSize >= _maxFileSize)
+            {
+                _fileCounter++;
+                filePath = Path.Combine(_testDirectory, $"{_filePrefix}{_fileCounter}.json");
+            }
+
+            AppendClientToJsonArray(client, filePath);
+        }
+
+        private void AppendClientToJsonArray(Client client, string filePath)
+        {
             lock (_fileLock)
             {
-                var filePath = Path.Combine(_testDirectory, $"{_filePrefix}{_fileCounter}.json");
-                long currentFileSize = 0;
+                var options = new JsonSerializerOptions { WriteIndented = true };
+                var clientJson = JsonSerializer.Serialize(client, options);
 
-                if (File.Exists(filePath))
-                    currentFileSize = new FileInfo(filePath).Length;
-
-                if (currentFileSize >= _maxFileSize)
+                if (!File.Exists(filePath))
                 {
-                    _fileCounter++;
-                    filePath = Path.Combine(_testDirectory, $"{_filePrefix}{_fileCounter}.json");
-                    currentFileSize = 0;
+                    using (var streamWriter = new StreamWriter(filePath, append: false))
+                    {
+                        streamWriter.WriteLine("[" + clientJson + "]");
+                    }
                 }
+                else
+                {
+                    using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite))
+                    {
+                        using (var streamReader = new StreamReader(fileStream))
+                        using (var streamWriter = new StreamWriter(fileStream))
+                        {
+                            fileStream.Seek(-1, SeekOrigin.End);
 
-                List<Client> clients = File.Exists(filePath)
-                    ? _exportService.ImportEntitiesFromJson(filePath).ToList()
-                    : new List<Client>();
+                            while (fileStream.Position > 0)
+                            {
+                                fileStream.Seek(-1, SeekOrigin.Current);
+                                if (streamReader.Read() == ']')
+                                {
+                                    fileStream.Seek(-1, SeekOrigin.Current);
+                                    break;
+                                }
+                                fileStream.Seek(-1, SeekOrigin.Current);
+                            }
 
-                clients.Add(client);
-                _exportService.ExportEntitiesToJson(clients, filePath);
+                            if (fileStream.Position > 1)
+                            {
+                                streamWriter.Write(",");
+                            }
+
+                            streamWriter.WriteLine();
+                            streamWriter.Write(clientJson);
+                            streamWriter.WriteLine();
+                            streamWriter.Write("]");
+                        }
+                    }
+                }   
             }
         }
 
