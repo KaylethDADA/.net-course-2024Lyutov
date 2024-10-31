@@ -1,6 +1,7 @@
 using BankSystem.Application.Services;
 using BankSystem.Data.Storages;
 using BankSystem.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace BankSystem.Data.Tests
 {
@@ -9,91 +10,95 @@ namespace BankSystem.Data.Tests
         private readonly BankSystemDbContext _dbContext;
         private readonly ClientStorage _clientStorage;
         private readonly TestDataGenerator _testDataGenerator;
+        private readonly CancellationToken _token;
 
         public ClientStorageTests()
         {
             _dbContext = new BankSystemDbContext();
             _clientStorage = new ClientStorage(_dbContext);
             _testDataGenerator = new TestDataGenerator();
+            _token = new CancellationToken();
         }
 
         [Fact]
-        public void AddClientPositiveTest()
+        public async Task AddClientPositiveTest()
         {
             // Arrange
             var client = _testDataGenerator.GenerateClients(1).First();
 
             // Act
-            _clientStorage.Add(client);
+            await _clientStorage.AddAsync(client, _token);
 
             // Assert
-            var actualClient = _clientStorage.GetById(client.Id);
+            var actualClient = await _clientStorage.GetByIdAsync(client.Id, _token);
 
             Assert.NotNull(actualClient);
             Assert.Equal(client, actualClient);
         }
 
         [Fact]
-        public void AddAccountPositiveTest()
+        public async Task AddAccountPositiveTest()
         {
             // Arrange
             var client = _testDataGenerator.GenerateClients(1).First();
-            _clientStorage.Add(client);
+            await _clientStorage.AddAsync(client, _token);
 
             var account = _testDataGenerator.GenerateAccounts(1, _testDataGenerator.GenerateCurrencies(1)).First();
 
             // Act
-            _clientStorage.AddAccount(client.Id, account);
+            await _clientStorage.AddAccountAsync(client.Id, account, _token);
 
             // Assert
-            var clientAccounts = _clientStorage.GetAccountsByClientId(client.Id);
+            var clientAccounts = await _clientStorage.GetAccountsByClientIdAsync(client.Id, _token);
 
             Assert.NotNull(clientAccounts);
             Assert.Contains(clientAccounts, a => a.Id == account.Id);
         }
 
         [Fact]
-        public void UpdateClientPositiveTest()
+        public async Task UpdateClientPositiveTest()
         {
             // Arrange
             var client = _testDataGenerator.GenerateClients(1).First();
-            _clientStorage.Add(client);
+            await _clientStorage.AddAsync(client, _token);
 
             var upClient = new Client
             {
                 Id = client.Id,
+                FirstName = client.FirstName,
+                LastName = client.LastName,
                 PassportNumber = client.PassportNumber,
                 BirthDay = client.BirthDay.AddYears(1),
                 PhoneNumber = "1234567890",
             };
 
             // Act
-            _clientStorage.Update(upClient);
+            await _clientStorage.UpdateAsync(upClient, _token);
 
             // Assert
-            var actualClient = _clientStorage.GetById(upClient.Id);
+            var actualClient = await _clientStorage.GetByIdAsync(upClient.Id, _token);
             Assert.NotNull(actualClient);
             Assert.Equal(upClient.BirthDay, client.BirthDay);
             Assert.Equal(upClient.PhoneNumber, client.PhoneNumber);
         }
 
         [Fact]
-        public void UpdateAccountPositiveTest()
+        public async Task UpdateAccountPositiveTest()
         {
             // Arrange
             var client = _testDataGenerator.GenerateClients(1).First();
-            _clientStorage.Add(client);
+            await _clientStorage.AddAsync(client, _token);
 
             var oldAccount = _testDataGenerator.GenerateAccounts(1, _testDataGenerator.GenerateCurrencies(1)).First();
-            _clientStorage.AddAccount(client.Id, oldAccount);
+            await _clientStorage.AddAccountAsync(client.Id, oldAccount, _token);
 
             oldAccount.Amount = 2000;
 
             // Act
-            _clientStorage.UpdateAccount(oldAccount);
+            await _clientStorage.UpdateAccountAsync(oldAccount, _token);
 
             // Assert
-            var updatedAccount = _clientStorage.GetAccountsByClientId(client.Id)
+            var updatedAccount = _clientStorage.GetAccountsByClientIdAsync(client.Id, _token).Result
                 .FirstOrDefault(a => a.Id == oldAccount.Id);
 
             Assert.NotNull(updatedAccount);
@@ -101,14 +106,14 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
-        public void GetByIdClientPositiveTest()
+        public async Task GetByIdClientPositiveTest()
         {
             // Arrange
             var client = _testDataGenerator.GenerateClients(1).First();
-            _clientStorage.Add(client);
+            await _clientStorage.AddAsync(client, _token);
 
             // Act
-            var actualClient = _clientStorage.GetById(client.Id);
+            var actualClient = await _clientStorage.GetByIdAsync(client.Id, _token);
 
             // Assert
             Assert.NotNull(actualClient);
@@ -116,17 +121,17 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
-        public void GetFilterClientsPositiveTest()
+        public async Task GetFilterClientsPositiveTest()
         {
             // Arrange
             var client1 = _testDataGenerator.GenerateClients(1).First();
             var client2 = _testDataGenerator.GenerateClients(1).First();
 
-            _clientStorage.Add(client1);
-            _clientStorage.Add(client2);
+            await _clientStorage.AddAsync(client1, _token);
+            await _clientStorage.AddAsync(client2, _token);
 
             // Act
-            var result = _clientStorage.Get(c => c.FirstName.Contains(client1.FirstName), 1, 10);
+            var result = await _clientStorage.GetAsync(c => c.FirstName.Contains(client1.FirstName), 1, 10, _token);
 
             // Assert
             Assert.Single(result);
@@ -134,22 +139,22 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
-        public void GetAccountsByClientIdPositiveTest()
+        public async Task GetAccountsByClientIdPositiveTest()
         {
             // Arrange
             var client = _testDataGenerator.GenerateClients(1).First();
 
-            _clientStorage.Add(client);
+            await _clientStorage.AddAsync(client, _token);
 
             var accounts = _testDataGenerator.GenerateAccounts(1, _testDataGenerator.GenerateCurrencies(5));
 
             foreach (var account in accounts)
             {
-                _clientStorage.AddAccount(client.Id, account);
+               await _clientStorage.AddAccountAsync(client.Id, account, _token);
             }
 
             // Act
-            var result = _clientStorage.GetAccountsByClientId(client.Id);
+            var result = await _clientStorage.GetAccountsByClientIdAsync(client.Id, _token);
 
             // Assert
             Assert.NotNull(result);
@@ -157,15 +162,15 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
-        public void GetByPassportNumberPositiveTest()
+        public async Task GetByPassportNumberPositiveTest()
         {
             // Arrange
             var client = _testDataGenerator.GenerateClients(1).First();
 
-            _clientStorage.Add(client);
+            await _clientStorage.AddAsync(client, _token);
 
             // Act
-            var result = _clientStorage.GetByPassportNumber(client.PassportNumber);
+            var result = await _clientStorage.GetByPassportNumberAsync(client.PassportNumber, _token);
 
             // Assert
             Assert.NotNull(result);
@@ -173,35 +178,35 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
-        public void DeleteClientPositiveTest()
+        public async Task DeleteClientPositiveTest()
         {
             // Arrange
             var client = _testDataGenerator.GenerateClients(1).First();
-            _clientStorage.Add(client);
+            await _clientStorage.AddAsync(client, _token);
 
             // Act
-            _clientStorage.Delete(client.Id);
+            await _clientStorage.DeleteAsync(client.Id, _token);
 
             // Assert
-            var deletedClient = _dbContext.Clients.FirstOrDefault(c => c.Id == client.Id);
-            Assert.Null(deletedClient);
+            var deletedClient = await _clientStorage.GetAsync(c => c.Id == client.Id, null, null, _token);
+            Assert.Null(deletedClient.FirstOrDefault());
         }
 
         [Fact]
-        public void DeleteAccountPositiveTest()
+        public async Task DeleteAccountPositiveTest()
         {
             // Arrange
             var client = _testDataGenerator.GenerateClients(1).First();
-            _clientStorage.Add(client);
+            await _clientStorage.AddAsync(client, _token);
 
             var account = _testDataGenerator.GenerateAccounts(1, _testDataGenerator.GenerateCurrencies(1)).First();
-            _clientStorage.AddAccount(client.Id, account);
+            await _clientStorage.AddAccountAsync(client.Id, account, _token);
 
             // Act
-            _clientStorage.DeleteAccount(account.Id);
+            await _clientStorage.DeleteAccountAsync(account.Id, _token);
 
             // Assert
-            var deletedAccount = _dbContext.Accounts.FirstOrDefault(a => a.Id == account.Id);
+            var deletedAccount = await _dbContext.Accounts.FirstOrDefaultAsync(a => a.Id == account.Id);
             Assert.Null(deletedAccount);
         }
     }

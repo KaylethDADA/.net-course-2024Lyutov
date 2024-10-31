@@ -1,5 +1,6 @@
 ﻿using BankSystem.Application.Interfaces;
 using BankSystem.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace BankSystem.Data.Storages
@@ -13,15 +14,15 @@ namespace BankSystem.Data.Storages
             _dbContext = dbContext;
         }
 
-        public void Add(Currency item)
+        public async Task AddAsync(Currency item, CancellationToken cancellationToken)
         {
-            _dbContext.Add(item);
-            _dbContext.SaveChanges();
+            await _dbContext.AddAsync(item);
+            await _dbContext.SaveChangesAsync();
         }
 
-        public void Update(Currency item)
+        public async Task UpdateAsync(Currency item, CancellationToken cancellationToken)
         {
-            var currency = _dbContext.Currencies.FirstOrDefault(x => x.Id == item.Id);
+            var currency = await _dbContext.Currencies.FirstOrDefaultAsync(x => x.Id == item.Id);
             if (currency == null)
                 throw new Exception($"{nameof(Currency)} not found.");
 
@@ -29,40 +30,49 @@ namespace BankSystem.Data.Storages
             currency.Code = item.Code;
             currency.Symbol = item.Symbol;
 
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
         }
 
-        public ICollection<Currency> Get(Expression<Func<Currency, bool>> filter, int pageNumber, int pageSize)
+        public async Task<ICollection<Currency>> GetAsync(
+            Expression<Func<Currency, bool>>? filter,
+            int? pageNumber,
+            int? pageSize,
+            CancellationToken cancellationToken)
         {
-            var currencies = _dbContext.Currencies.Where(filter).Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
+            var quer = _dbContext.Currencies.AsQueryable();
 
-            return currencies;
+            if (filter != null)
+                quer = quer.Where(filter);
+
+            if (pageNumber != null && pageSize != null)
+                quer = quer.Skip((pageNumber.Value - 1) * pageSize.Value)
+                           .Take(pageSize.Value);
+
+            return await quer.ToListAsync();
         }
 
-        public Currency? GetById(Guid Id)
+        public async Task<Currency>? GetByIdAsync(Guid Id, CancellationToken cancellationToken)
         {
-            return _dbContext.Currencies.FirstOrDefault(x =>x.Id == Id);
+            return await _dbContext.Currencies.FirstOrDefaultAsync(x =>x.Id == Id);
         }
 
-        public Currency GetDefaultCurrency()
+        public async Task<Currency> GetDefaultCurrencyAsync(CancellationToken cancellationToken)
         {
-            var currency = _dbContext.Currencies.FirstOrDefault(x => x.Code == "USD");
+            var currency = await _dbContext.Currencies.FirstOrDefaultAsync(x => x.Code == "USD");
             if (currency == null)
                 throw new Exception("Default currency not found.");
 
             return currency;
         }
 
-        public void Delete(Guid id)
+        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
         {
-            var currency = _dbContext.Currencies.FirstOrDefault(x => x.Id == id);
+            var currency = await _dbContext.Currencies.FirstOrDefaultAsync(x => x.Id == id);
             if (currency == null)
                 throw new Exception($"{nameof(Currency)} not found.");
 
             _dbContext.Currencies.Remove(currency);
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

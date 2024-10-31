@@ -14,7 +14,7 @@ namespace BankSystem.Application.Services
             _currencyStorage = currencyStorage;
         }
 
-        public void Add(Currency item)
+        public async Task AddAsync(Currency item, CancellationToken cancellationToken)
         {
             if (item == null)
                 throw new CurrencyValidationException("Currency item cannot be null.");
@@ -28,10 +28,10 @@ namespace BankSystem.Application.Services
             if (string.IsNullOrWhiteSpace(item.Symbol))
                 throw new CurrencyValidationException("Currency symbol is required.");
 
-            _currencyStorage.Add(item);
+            await _currencyStorage.AddAsync(item, cancellationToken);
         }
 
-        public void Update(Currency item)
+        public async Task UpdateAddAsync(Currency item, CancellationToken cancellationToken)
         {
             if (item == null)
                 throw new CurrencyValidationException("Currency item cannot be null.");
@@ -39,7 +39,7 @@ namespace BankSystem.Application.Services
             if (item.Id == Guid.Empty)
                 throw new CurrencyValidationException("Invalid currency ID.");
 
-            var exCurrency = _currencyStorage.GetById(item.Id);
+            var exCurrency = await _currencyStorage.GetByIdAsync(item.Id, cancellationToken);
             if (exCurrency == null)
                 throw new CurrencyValidationException("Currency not found.");
 
@@ -52,27 +52,26 @@ namespace BankSystem.Application.Services
             if (string.IsNullOrWhiteSpace(item.Symbol))
                 throw new CurrencyValidationException("Currency symbol is required.");
 
-            _currencyStorage.Update(item);
+            await _currencyStorage.UpdateAsync(item, cancellationToken);
         }
 
-        public ICollection<Currency> Get(Expression<Func<Currency, bool>> filter, int pageNumber, int pageSize)
+        public async Task<ICollection<Currency>> GetAddAsync(
+            Expression<Func<Currency, bool>>? filter,
+            int? pageNumber,
+            int? pageSize,
+            CancellationToken cancellationToken)
         {
-            return _currencyStorage.Get(filter, pageNumber, pageSize);
+            return await _currencyStorage.GetAsync(filter, pageNumber, pageSize, cancellationToken);
         }
 
-        public Currency? GetById(Guid id)
+        public async Task<Currency> GetByIdAddAsync(Guid id, CancellationToken cancellationToken)
         {
-            return _currencyStorage.GetById(id);
+            return await _currencyStorage.GetByIdAsync(id, cancellationToken);
         }
 
-        public Currency GetDefaultCurrency()
+        public async Task DeleteAddAsync(Guid id, CancellationToken cancellationToken)
         {
-            return _currencyStorage.GetDefaultCurrency();
-        }
-
-        public void Delete(Guid id)
-        {
-            _currencyStorage.Delete(id);
+           await _currencyStorage.DeleteAsync(id, cancellationToken);
         }
     }
 }

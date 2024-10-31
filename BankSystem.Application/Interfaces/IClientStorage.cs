@@ -4,10 +4,11 @@ namespace BankSystem.Application.Interfaces
 {
     public interface IClientStorage : IStorage<Client>
     {
-        ICollection<Account> GetAccountsByClientId(Guid clientId);
-        void AddAccount(Guid clientId, Account account);
-        void UpdateAccount(Account account);
-        void DeleteAccount(Guid accountId);
-        Client? GetByPassportNumber(string passportNumber);
+        Task<ICollection<Account>> GetAccountsByClientIdAsync(Guid clientId, CancellationToken cancellationToken);
+        Task AddAccountAsync(Guid clientId, Account account, CancellationToken cancellationToken);
+        Task UpdateAccountAsync(Account account, CancellationToken cancellationToken);
+        Task DeleteAccountAsync(Guid accountId, CancellationToken cancellationToken);
+        Task<Client> GetByPassportNumberAsync(string passportNumber, CancellationToken cancellationToken);
+        Task<ICollection<Account>> GetAllAccount(CancellationToken cancellationToken);
     }
 }

@@ -12,7 +12,7 @@ namespace BankSystem.Application.Services
                 .RuleFor(c => c.FirstName, f => f.Name.FirstName())
                 .RuleFor(c => c.LastName, f => f.Name.LastName())
                 .RuleFor(c => c.PhoneNumber, f => $"+373 77 {f.Random.Int(4, 9)} {f.Random.Number(100, 999)}")
-                .RuleFor(c => c.PassportNumber, f => f.Random.String2(10, "0123456789"))
+                .RuleFor(c => c.PassportNumber, f => f.Random.String2(10, Guid.NewGuid().ToString()))
                 .RuleFor(c => c.BirthDay, f => f.Date.Past(50, DateTime.Now.AddYears(-18)))
                 .RuleFor(c => c.Accounts, _ => new List<Account>());
 
@@ -26,7 +26,7 @@ namespace BankSystem.Application.Services
                 .RuleFor(c => c.FirstName, f => f.Name.FirstName())
                 .RuleFor(c => c.LastName, f => f.Name.LastName())
                 .RuleFor(e => e.PhoneNumber, f => $"+373 77 {f.Random.Int(4, 9)} {f.Random.Number(100, 999)}")
-                .RuleFor(e => e.PassportNumber, f => f.Random.String2(10, "0123456789"))
+                .RuleFor(e => e.PassportNumber, f => f.Random.String2(10, Guid.NewGuid().ToString()))
                 .RuleFor(e => e.BirthDay, f => f.Date.Past(50, DateTime.Now.AddYears(-18)))
                 .RuleFor(e => e.Salary, f => f.Random.Int(30000, 100000))
                 .RuleFor(e => e.Contract, f => f.Random.Bool() ? "Permanent" : "Temporary");
@@ -40,6 +40,19 @@ namespace BankSystem.Application.Services
                 .RuleFor(a => a.Id, f => Guid.NewGuid())
                 .RuleFor(a => a.Currency, f => f.PickRandom(currencies))
                 .RuleFor(a => a.CurrencyId, (f, a) => a.Currency.Id)
+                .RuleFor(a => a.Amount, f => f.Finance.Amount(10, 10000))
+                .RuleFor(a => a.Client, _ => null)
+                .RuleFor(a => a.ClientId, _ => Guid.Empty);
+
+            return accountFaker.Generate(count);
+        }
+
+        public List<Account> GenerateAccounts(int count)
+        {
+            var accountFaker = new Faker<Account>()
+                .RuleFor(a => a.Id, f => Guid.NewGuid())
+                .RuleFor(a => a.Currency, f => null)
+                .RuleFor(a => a.CurrencyId, f => Guid.NewGuid())
                 .RuleFor(a => a.Amount, f => f.Finance.Amount(10, 10000))
                 .RuleFor(a => a.Client, _ => null)
                 .RuleFor(a => a.ClientId, _ => Guid.Empty);
