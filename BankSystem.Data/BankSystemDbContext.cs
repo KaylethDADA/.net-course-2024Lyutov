@@ -11,9 +11,9 @@ namespace BankSystem.Data
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Currency> Currencies { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        public BankSystemDbContext(DbContextOptions<BankSystemDbContext> options)
+                : base(options)
         {
-            optionsBuilder.UseNpgsql("User ID=myuser;Password=1234;Host=localhost;Port=5432;Database=TestsDexPostgresBd;");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
