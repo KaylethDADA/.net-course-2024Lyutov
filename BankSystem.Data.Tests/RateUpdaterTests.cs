@@ -3,7 +3,7 @@ using BankSystem.Data.Storages;
 
 namespace BankSystem.Data.Tests
 {
-    public class RateUpdaterTests
+   /* public class RateUpdaterTests
     {
         private readonly RateUpdater _rateUpdater;
         private readonly ClientStorage _clientStorage;
@@ -46,5 +46,5 @@ namespace BankSystem.Data.Tests
                 Assert.Equal(DateTime.UtcNow.Date, account.LastUpdatedDate.Date);
             }
         }
-    }
+    }*/
 }

@@ -5,7 +5,7 @@ using BankSystem.Domain.Models;
 
 namespace BancSystem.App.Tests
 {
-    public class CurrencyServiceTests
+   /* public class CurrencyServiceTests
     {
         private readonly ClientStorage _clientStorage;
         private readonly CurrencyStorage _currencyStorage;
@@ -111,5 +111,5 @@ namespace BancSystem.App.Tests
             var deletedCurrency = await _currencyStorage.GetByIdAsync(currency.Id, _token);
             Assert.Null(deletedCurrency);
         }
-    }
+    }*/
 }

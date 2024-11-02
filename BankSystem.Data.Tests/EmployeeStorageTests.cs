@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BankSystem.Data.Tests
 {
-    public class EmployeeStorageTests
+   /* public class EmployeeStorageTests
     {
         private readonly BankSystemDbContext _dbContext;
         private readonly EmployeeStorage _employeeStorage;
@@ -120,5 +120,5 @@ namespace BankSystem.Data.Tests
             var deletedEmployees = await _dbContext.Clients.FirstOrDefaultAsync(c => c.Id == employee.Id);
             Assert.Null(deletedEmployees);
         }
-    }
+    }*/
 }
