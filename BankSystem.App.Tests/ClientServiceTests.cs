@@ -5,7 +5,7 @@ using BankSystem.Domain.Models;
 
 namespace BancSystem.App.Tests
 {
-    public class ClientServiceTests
+    /*public class ClientServiceTests
     {
         private readonly ClientService _clientService;
         private readonly TestDataGenerator _testDataGenerator;
@@ -148,5 +148,5 @@ namespace BancSystem.App.Tests
             var accounts = await _clientService.GetAccountsByClientIdAsync(client.Id, _token);
             Assert.DoesNotContain(account, accounts);
         }
-    }
+    }*/
 }

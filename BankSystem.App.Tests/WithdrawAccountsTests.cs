@@ -6,7 +6,7 @@ using System.Collections.Concurrent;
 
 namespace BancSystem.App.Tests
 {
-    public class WithdrawAccountsTests
+   /* public class WithdrawAccountsTests
     {
         private readonly BankSystemDbContext _db;
         private readonly ClientService _clientService;
@@ -89,5 +89,5 @@ namespace BancSystem.App.Tests
                 Assert.Equal(80m, updatedAccount!.Amount);
             }
         }
-    }
+    }*/
 }

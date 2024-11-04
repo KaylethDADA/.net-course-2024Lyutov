@@ -1,4 +1,6 @@
-﻿using BankSystem.Application.Exceptions;
+﻿using AutoMapper;
+using BankSystem.Application.Dto.EmployeeDto;
+using BankSystem.Application.Exceptions;
 using BankSystem.Application.Interfaces;
 using BankSystem.Domain.Models;
 using System.Linq.Expressions;
@@ -8,25 +10,19 @@ namespace BankSystem.Application.Services
     public class EmployeeService 
     {
         private readonly IStorage<Employee> _employeeStorage;
+        private readonly IMapper _mapper;
 
-        public EmployeeService(IStorage<Employee> employeeStorage)
+        public EmployeeService(IStorage<Employee> employeeStorage, IMapper mapper)
         {
             _employeeStorage = employeeStorage;
+            _mapper = mapper;
         }
 
-        public async Task AddEmploeeAsync(Employee employee, CancellationToken cancellationToken)
+        public async Task AddEmployeeAsync(CreateEmployeeRequest request, CancellationToken cancellationToken)
         {
-            if (employee == null)
-                throw new EmployeeValidationException($"The {nameof(Employee)} cannot be null.");
-
-            if (employee.BirthDay > DateTime.Now.AddYears(-18))
-                throw new EmployeeValidationException($"{nameof(Employee)} must be over 18 years old.");
-
-            if (string.IsNullOrWhiteSpace(employee.PassportNumber))
-                throw new EmployeeValidationException($"The {nameof(Employee)} must have passport details.");
-
             try
             {
+                var employee = _mapper.Map<Employee>(request);
                 await _employeeStorage.AddAsync(employee, cancellationToken);
             }
             catch (Exception ex)
@@ -35,20 +31,13 @@ namespace BankSystem.Application.Services
             }
         }
 
-        public async Task UpdateAsync(Employee employee, CancellationToken cancellationToken)
+        public async Task<EmployeeResponse> UpdateAsync(UpdateEmployeeRequest request, CancellationToken cancellationToken)
         {
-            if (employee == null)
-                throw new EmployeeValidationException($"The {nameof(Employee)} cannot be null.");
-
-            if (employee.BirthDay > DateTime.Now.AddYears(-18))
-                throw new EmployeeValidationException($"{nameof(Employee)} must be over 18 years old.");
-
-            if (string.IsNullOrWhiteSpace(employee.PassportNumber))
-                throw new EmployeeValidationException($"The {nameof(Employee)} must have passport details.");
-
             try
             {
+                var employee = _mapper.Map<Employee>(request);
                 await _employeeStorage.UpdateAsync(employee, cancellationToken);
+                return _mapper.Map<EmployeeResponse>(employee);
             }
             catch (Exception ex)
             {
@@ -56,21 +45,13 @@ namespace BankSystem.Application.Services
             }
         }
 
-        public async Task<ICollection<Employee>> GetAsync(
-            Expression<Func<Employee, bool>>? filter,
-            int? pageNumber,
-            int? pageSize,
-            CancellationToken cancellationToken)
+        public async Task<ICollection<EmployeeResponse>> GetAsync(GetEmployeeFilterRequest request, CancellationToken cancellationToken)
         {
-            if (pageNumber <= 0)
-                throw new EmployeeException("Page number must be greater than zero.");
-
-            if (pageSize <= 0)
-                throw new EmployeeException("Page size must be greater than zero.");
-
             try
             {
-                return await _employeeStorage.GetAsync(filter, pageNumber, pageSize, cancellationToken);
+                var filter = _mapper.Map<Expression<Func<Employee, bool>>>(request);
+                var employees = await _employeeStorage.GetAsync(filter, request.PageNumber ?? null, request.PageSize ?? null, cancellationToken);
+                return _mapper.Map<ICollection<EmployeeResponse>>(employees);
             }
             catch (Exception ex)
             {
@@ -78,13 +59,14 @@ namespace BankSystem.Application.Services
             }
         }
 
-        public async Task<Employee> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+        public async Task<EmployeeResponse> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             try
             {
-                return await _employeeStorage.GetByIdAsync(id, cancellationToken);
+                var employee = await _employeeStorage.GetByIdAsync(id, cancellationToken);
+                return _mapper.Map<EmployeeResponse>(employee);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new EmployeeException($"An error occurred while retrieving {nameof(Employee)}.", ex);
             }

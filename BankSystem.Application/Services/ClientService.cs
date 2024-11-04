@@ -1,4 +1,6 @@
-﻿using BankSystem.Application.Exceptions;
+﻿using AutoMapper;
+using BankSystem.Application.Dto.ClientDto;
+using BankSystem.Application.Exceptions;
 using BankSystem.Application.Interfaces;
 using BankSystem.Domain.Models;
 using System.Linq.Expressions;
@@ -9,27 +11,21 @@ namespace BankSystem.Application.Services
     {
         private readonly IClientStorage _clientStorage;
         private readonly ICurrencyStorage _currencyStorage;
+        private readonly IMapper _mapper;
 
-        public ClientService(IClientStorage clientStorage, ICurrencyStorage currencyStorage)
+        public ClientService(IClientStorage clientStorage, ICurrencyStorage currencyStorage, IMapper mapper)
         {
             _clientStorage = clientStorage;
             _currencyStorage = currencyStorage;
+            _mapper = mapper;
         }
 
-        public async Task AddClientAsync(Client client, CancellationToken cancellationToken)
+        public async Task AddClientAsync(CreateClientRequest request, CancellationToken cancellationToken)
         {
-            if (client.Age < 18)
-                throw new ClientValidationException($"{nameof(Client)} must be over 18 years old.");
-
-            if (string.IsNullOrWhiteSpace(client.PassportNumber))
-                throw new ClientValidationException($"The {nameof(Client)} must have passport details.");
-
-            var result = await GetByPassportNumberAsync(client.PassportNumber, cancellationToken);
-            if (result != null)
-                throw new ClientValidationException($"A {nameof(Client)} with the same passport number already exists.");
-
             try
             {
+                var client = _mapper.Map<Client>(request);
+
                 await _clientStorage.AddAsync(client, cancellationToken);
 
                 var defaultAccount = new Account
@@ -62,24 +58,13 @@ namespace BankSystem.Application.Services
             }
         }
 
-        public async Task UpdateClientAsync(Client client, CancellationToken cancellationToken)
+        public async Task<ClientResponse> UpdateClientAsync(UpdateClientRequest request, CancellationToken cancellationToken)
         {
-            if (client == null)
-                throw new ClientValidationException("The old or new client cannot be zero.");
-
-            if (client.Age < 18)
-                throw new ClientValidationException($"{nameof(Client)} must be over 18 years old.");
-
-            if (string.IsNullOrWhiteSpace(client.PassportNumber))
-                throw new ClientValidationException($"The {nameof(Client)} must have passport details.");
-
-            var result = GetByIdAsync(client.Id, cancellationToken);
-            if (result == null)
-                throw new ClientValidationException($"{nameof(Client)} not found.");
-
             try
             {
+                var client = _mapper.Map<Client>(request);
                 await _clientStorage.UpdateAsync(client, cancellationToken);
+                return _mapper.Map<ClientResponse>(client);
             }
             catch (Exception ex)
             {
@@ -102,21 +87,13 @@ namespace BankSystem.Application.Services
             }
         }
 
-        public async Task<ICollection<Client>> GetAsync(
-            Expression<Func<Client, bool>>? filter,
-            int? pageNumber,
-            int? pageSize,
-            CancellationToken cancellationToken)
+        public async Task<ICollection<ClientResponse>> GetAsync(GetClientFilterRequest request, CancellationToken cancellationToken)
         {
-            if (pageNumber <= 0)
-                throw new ClientValidationException("Page number must be greater than zero.");
-
-            if (pageSize <= 0)
-                throw new ClientValidationException("Page size must be greater than zero.");
-
             try
             {
-                return await _clientStorage.GetAsync(filter, pageNumber, pageSize, cancellationToken);
+                var filter = _mapper.Map<Expression<Func<Client, bool>>>(request);
+                var clients = await _clientStorage.GetAsync(filter, request.PageNumber, request.PageSize, cancellationToken);
+                return _mapper.Map<ICollection<ClientResponse>>(clients);
             }
             catch (Exception ex)
             {
@@ -124,11 +101,12 @@ namespace BankSystem.Application.Services
             }
         }
 
-        public async Task<Client> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+        public async Task<ClientResponse> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             try
             {
-                return await _clientStorage.GetByIdAsync(id, cancellationToken);
+                var client = await _clientStorage.GetByIdAsync(id, cancellationToken);
+                return _mapper.Map<ClientResponse>(client);
             }
             catch (Exception ex)
             {

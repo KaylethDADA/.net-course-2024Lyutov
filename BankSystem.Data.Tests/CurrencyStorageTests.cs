@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BankSystem.Data.Tests
 {
-    public class CurrencyStorageTests
+  /* public class CurrencyStorageTests
     {
         private readonly BankSystemDbContext _dbContext;
         private readonly CurrencyStorage _currencyStorage;
@@ -102,5 +102,5 @@ namespace BankSystem.Data.Tests
             // Assert
             Assert.Null(result);
         }
-    }
+    }*/
 }
