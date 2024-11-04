@@ -35,7 +35,7 @@ namespace BankSystem.API.Controllers
 
         [HttpGet("GetById/{clientId}")]
         public async Task<IActionResult> GetClientById(
-            [FromQuery] Guid clientId,
+            [FromRoute] Guid clientId,
             CancellationToken cancellationToken)
         {
             var client = await _clientService.GetByIdAsync(clientId, cancellationToken);
@@ -53,7 +53,7 @@ namespace BankSystem.API.Controllers
 
         [HttpDelete("Delete/{clientId}")]
         public async Task<IActionResult> DeleteClient(
-            [FromBody] Guid clientId,
+            [FromRoute] Guid clientId,
             CancellationToken cancellationToken)
         {
             await _clientService.DeleteClientAsync(clientId, cancellationToken);

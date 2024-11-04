@@ -34,21 +34,27 @@ namespace BankSystem.API.Controllers
         }
 
         [HttpGet("GetById/{id}")]
-        public async Task<IActionResult> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetByIdAsync(
+            [FromRoute] Guid id,
+            CancellationToken cancellationToken)
         {
             var employee = await _employeeService.GetByIdAsync(id, cancellationToken);
             return Ok(employee);
         }
 
         [HttpGet("Get")]
-        public async Task<IActionResult> GetEmployees(GetEmployeeFilterRequest request, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetEmployees(
+            [FromQuery] GetEmployeeFilterRequest request,
+            CancellationToken cancellationToken)
         {
             var employees = await _employeeService.GetAsync(request, cancellationToken);
             return Ok(employees);
         }
 
         [HttpDelete("Delete/{id}")]
-        public async Task<IActionResult> DeleteEmployee(Guid id, CancellationToken cancellationToken)
+        public async Task<IActionResult> DeleteEmployee(
+            [FromRoute] Guid id,
+            CancellationToken cancellationToken)
         {
             await _employeeService.DeleteAsync(id, cancellationToken);
             return Ok();
