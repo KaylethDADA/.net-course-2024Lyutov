@@ -13,8 +13,10 @@ builder.Services.AddDbContext<BankSystemDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), 
         b => b.MigrationsAssembly(typeof(BankSystemDbContext).Assembly.FullName)));
 
-builder.Services.AddScoped<ICurrencyStorage, CurrencyStorage>();
+builder.Services.AddHttpClient();
 
+builder.Services.AddScoped<CurrencyService>();
+builder.Services.AddScoped<ICurrencyStorage, CurrencyStorage>();
 builder.Services.AddScoped<ClientService>();
 builder.Services.AddScoped<IClientStorage, ClientStorage>();
 builder.Services.AddScoped<EmployeeService>();
